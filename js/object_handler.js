@@ -74,6 +74,19 @@ function SqlBuildModel(){
 			name:"Custom (enum)"
 		}
 	]
+
+	self.architecture = [
+		new Table("placeholder")
+	];
+
+	var selected = ko.observable(self.architecture[0]);
+}
+
+function Table(name, length, values){
+	var self = this;
+	self.name = name;
+	self.length != undefined ? self.length = length : true;
+	self.values != undefined ? self.values = values : true;
 }
 
 

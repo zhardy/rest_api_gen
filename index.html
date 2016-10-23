@@ -8,34 +8,27 @@
   
 </head>
 <body>
-
 <div class="container">
-  <h2>Vertical (basic) form</h2>
-  <form>
-    <div class="form-group">
-      <label for="email">Email:</label>
-      <input type="email" class="form-control" id="email" placeholder="Enter email">
+  <h2>SQL Architecture Build</h2>
+      <div class="checkbox">
+      <label><input type="checkbox"> User Password?</label>
     </div>
-    <div class="form-group">
-      <label for="pwd">Password:</label>
-      <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+  <div class="row-container" >
+    <div class="row">
+      <div class="form-group col-xs-3">
+        <label>Name</label>
+        <input class="form-control" placeholder="Enter a name for this table">
+      </div>
+      <div class="form-group col-xs-3">
+        <label>Data type</label>
+        <select class="form-control chosen-select" data-bind="options: $root.dataTypes, value:dataTypes, optionsText: 'name'">
+
+        </select>
+      </div>
+      
     </div>
-    <div class="checkbox">
-      <label><input type="checkbox"> Remember me</label>
-    </div>
-    <div class="form-group">
-      <select class="chosen-select form-control" data-bind="options: $root.dataTypes, value:dataTypes, optionsText: 'name'">
-
-      </select>
-    </div>
-    
-
-
-
-    <button type="submit" class="btn btn-default">Submit</button>
-  </form>
+  </div>
 </div>
-
 </body>
 <head>
   <script src="./lib/jquery-3.1.1.min.js"></script>
