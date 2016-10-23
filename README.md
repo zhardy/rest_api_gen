@@ -16,3 +16,6 @@ Update
 Delete
 
 Users checkbox auotcreates UserName and Passwords table
+
+
+sudo apt-get install python
