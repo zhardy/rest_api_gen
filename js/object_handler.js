@@ -8,16 +8,6 @@ function Table(name, values) {
         self.values.remove(value);
     }
 
-    // self.values().forEach(function(item){
-    //     item.isPrimary.subscribe(function(newData){
-
-    //     });
-    // });
-
-    // self.values.subscribe(function(newData){
-    //     console.log('chagned');
-    // });
-
     self.addValue = function(){
         self.values.push(new Value("", "", false));
         $('.chosen-select').chosen();
@@ -28,11 +18,16 @@ function Value(name, type, isPrimary){
     var self = this;
     self.name = name;
     self.type = ko.observable(type);
+    self.length = ko.observable();
     if(type.startingLength){
-        self.length = ko.observable(type.startingLength);
+        self.length(type.startingLength);
     }
     self.isPrimary = ko.observable(isPrimary);
-
+    self.type.subscribe(function(newData){
+        if(newData.startingLength){
+            self.length(newData.startingLength);
+        }
+    });
     self.togglePrimary = function(){
         if(self.isPrimary() === true){
             self.isPrimary(false);
