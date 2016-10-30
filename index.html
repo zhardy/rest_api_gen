@@ -23,14 +23,12 @@
 
                         <div class="col-xs-1 col-xs-offset-9">
                             <a href="#" title="Delete this table">
-                                <span class="glyphicon glyphicon-remove" data-bind="click: $root.removeTable"></span>
+                                <button class="glyphicon glyphicon-remove btn" data-bind="click: $root.removeTable"></button>
                             </a>
                         </div>
                 </div>
                 <div class="value-container" data-bind="foreach: values">
-                    <div class="row">
-                        
-
+                    <div class="row">                        
                         <div class="col-xs-2 col-xs-offset-2">
                             <input data-bind="value: name"/>
                         </div>
@@ -48,7 +46,7 @@
                         </div>
                         <div class="col-xs-1">
                             <a href="#" title="Delete this value">
-                                <span data-bind="click: $parent.removeValue" class="glyphicon glyphicon-remove"></span>
+                                <button data-bind="click: $parent.removeValue" class="glyphicon glyphicon-remove btn"></button>
                             </a>
                         </div>
                         <br>
@@ -57,7 +55,7 @@
                 </div>
                 <div class="row">
                     <div class="col-xs-1 col-xs-offset-11">
-                        <span class="glyphicon glyphicon-plus" data-bind="click: addValue"></span>
+                        <button class="glyphicon glyphicon-plus btn" data-bind="click: addValue"></span>
                     </div>
                 </div>
                 <br>
