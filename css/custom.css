@@ -8,11 +8,14 @@
 	font-size: 1.6em;
 }
 
-
 .glyphicon-star-empty{
 	opacity:0;
 }
 
 .glyphicon-star-empty:hover {
 	opacity: 1;
+}
+
+.glyphicon-plus{
+	color:green;
 }

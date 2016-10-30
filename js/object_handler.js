@@ -17,6 +17,11 @@ function Table(name, values) {
     // self.values.subscribe(function(newData){
     //     console.log('chagned');
     // });
+
+    self.addValue = function(){
+        self.values.push(new Value("", "", false));
+        $('.chosen-select').chosen();
+    }
 }
 
 function Value(name, type, isPrimary){
