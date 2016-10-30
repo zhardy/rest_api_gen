@@ -7,6 +7,16 @@ function Table(name, values) {
     self.removeValue = function(value){
         self.values.remove(value);
     }
+
+    // self.values().forEach(function(item){
+    //     item.isPrimary.subscribe(function(newData){
+
+    //     });
+    // });
+
+    // self.values.subscribe(function(newData){
+    //     console.log('chagned');
+    // });
 }
 
 function Value(name, type, isPrimary){
@@ -148,7 +158,10 @@ function SqlBuildModel() {
 
     // Operations
     self.addTable = function() {
-        self.architecture.push(new Table("", self.dataTypes[0]));
+        self.architecture.push(
+            new Table("", [new Value("ID", self.dataTypes[8], true)
+                ])
+            );
         $('.chosen-select').chosen();
     }
     self.removeTable = function(table) { 
