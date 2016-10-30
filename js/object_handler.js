@@ -18,24 +18,12 @@ function Value(name, type, isPrimary){
     var self = this;
     self.name = name;
     self.type = ko.observable(type);
-    self.length = ko.observable();
-    if(type.startingLength){
-        self.length(type.startingLength);
-    }
+    self.length = ko.observable(type.startingLength);
     self.isPrimary = ko.observable(isPrimary);
-    self.type.subscribe(function(newData){
-        if(newData.startingLength){
-            self.length(newData.startingLength);
-        } else{
-            self.length(undefined);
-        }
-    });
+
+
     self.togglePrimary = function(){
-        if(self.isPrimary() === true){
-            self.isPrimary(false);
-        } else {
-            self.isPrimary(true);
-        }
+        self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
     }
 }
 
@@ -81,7 +69,7 @@ function SqlBuildModel() {
         },
         {
             name:"varchar",
-            startingLength:80
+            length:80
         },
         {
             name:"char",
@@ -175,10 +163,7 @@ function SqlBuildModel() {
 
 $(document).ready(function(){
     var test = new SqlBuildModel();
-
     ko.applyBindings(test);
     $('.chosen-select').chosen();
-    console.log($('#test'));
-
 
 });
