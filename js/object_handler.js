@@ -97,11 +97,7 @@ function SqlBuildModel() {
             name:"interval"
         },
         {
-            name:"boolean",
-            values: [ 
-            true,
-            false
-            ]
+            name:"boolean"
         },
         {
             name:"Custom (enum)"
@@ -131,7 +127,7 @@ function SqlBuildModel() {
                     self.architecture.push(template);
                 }
             });
-            $('.chosen-select').chosen();
+            $('.chosen-select').chosen({width:'85%'});
         }
         if(newData === false){
             self.userPasswordTemplates.forEach(function(template){
@@ -164,6 +160,5 @@ function SqlBuildModel() {
 $(document).ready(function(){
     var test = new SqlBuildModel();
     ko.applyBindings(test);
-    $('.chosen-select').chosen();
 
 });
