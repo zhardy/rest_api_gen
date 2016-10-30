@@ -18,10 +18,8 @@ function Value(name, type, isPrimary){
     var self = this;
     self.name = name;
     self.type = ko.observable(type);
-    self.length = ko.observable(type.startingLength);
     self.isPrimary = ko.observable(isPrimary);
-
-
+	self.foreignReference = ko.observable(false);
     self.togglePrimary = function(){
         self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
     }

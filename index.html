@@ -25,11 +25,18 @@
                             </a>
                         </div>
                 </div>
+				<br>
                 <div class="value-container" data-bind="foreach: values">
                 <br>
-                    <div class="row">                        
+                    <div class="row">       
+						<div class="col-xs-1">
+							<label>Ref?</label>
+							<input type="checkbox" data-bind="checked: foreignReference"/>
+						</div>
                         <div class="col-xs-2">
-                            <input data-bind="value: name"/>
+                            <input data-bind="value: name, if: !foreignReference()"/>
+							<!--<select data-bind="options: $parent.architecture(), value:name, optionsText: 'name'" class="chosen-select">
+							</select> -->
                         </div>
                         <div class="col-xs-3">
                             <select data-bind="options: $root.dataTypes, value: type, optionsText: 'name'" class="chosen-select">
