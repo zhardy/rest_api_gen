@@ -9,7 +9,7 @@ function Table(name, values) {
     }
 
     self.addValue = function(){
-        self.values.push(new Value("", "", false));
+        self.values.push(new Value("", {}, false));
         $('.chosen-select').chosen();
     }
 }
@@ -26,6 +26,8 @@ function Value(name, type, isPrimary){
     self.type.subscribe(function(newData){
         if(newData.startingLength){
             self.length(newData.startingLength);
+        } else{
+            self.length(undefined);
         }
     });
     self.togglePrimary = function(){
