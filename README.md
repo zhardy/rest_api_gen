@@ -1,14 +1,4 @@
-smallint
-integer	
-bigint	
-decimal	
-numeric	
-real	
-double 
-smallserial
-serial	
-bigserial
-Custom (enum)
+
 
 Select
 Insert
