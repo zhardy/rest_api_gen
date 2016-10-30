@@ -42,7 +42,9 @@
                             <input type="number" data-bind="visible: length, value:length" />
                         </div>
                         <div class="col-xs-1">
-                            <span data-bind= "click: togglePrimary, css: {'glyphicon-star' :isPrimary(), 'glyphicon-star-empty' :!isPrimary()}" class="glyphicon"></span>
+                            <a href="#" title="Make primary key">
+                                <span data-bind= "click: togglePrimary, css: {'glyphicon-star' :isPrimary(), 'glyphicon-star-empty' :!isPrimary()}" class="glyphicon"></span>
+                            </a>
                         </div>
                         <div class="col-xs-1">
                             <a href="#" title="Delete this value">
