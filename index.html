@@ -34,14 +34,27 @@
 							<input type="checkbox" data-bind="checked: foreignReference"/>
 						</div>
                         <div class="col-xs-2">
-                            <input data-bind="value: name, if: !foreignReference()"/>
+                            <!-- ko if: !foreignReference() -->
+                            <input data-bind="if: foreignReference(), value: name"/>
+                            <!-- /ko -->
+
+                            <!-- ko if: foreignReference() -->
+                            <select data-bind="options: $root.architecture(), optionsText: 'name'" class="chosen-select"></select>
+                            <!-- /ko -->
+
 							<!--<select data-bind="options: $parent.architecture(), value:name, optionsText: 'name'" class="chosen-select">
 							</select> -->
                         </div>
                         <div class="col-xs-3">
+                            <!-- ko if:!foreignReference() -->
                             <select data-bind="options: $root.dataTypes, value: type, optionsText: 'name'" class="chosen-select">
                                 
                             </select>
+                            <!-- /ko -->
+
+                            <!-- ko if:foreignReference() -->
+                            <!-- <select data-bind="options: "> -->
+                            <!-- /ko -->
                         </div>
                         
                         <div class="col-xs-2">

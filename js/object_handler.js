@@ -23,6 +23,11 @@ function Value(name, type, isPrimary){
     self.togglePrimary = function(){
         self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
     }
+    self.foreignReference.subscribe(function(newData){
+        setTimeout(function(){
+            $('.chosen-select').chosen();
+        }, 3);
+    });
 }
 
 // Overall viewmodel for this screen, along with initial state
