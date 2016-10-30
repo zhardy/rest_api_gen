@@ -1,8 +1,30 @@
 // Class to represent a row in the seat reservations grid
-function Table(name, initialType) {
+function Table(name, values) {
     var self = this;
     self.name = name;
-    self.type = ko.observable(initialType);
+    self.values = ko.observableArray(values);
+
+    self.removeValue = function(value){
+        self.values.remove(value);
+    }
+}
+
+function Value(name, type, isPrimary){
+    var self = this;
+    self.name = name;
+    self.type = ko.observable(type);
+    if(type.startingLength){
+        self.length = ko.observable(type.startingLength);
+    }
+    self.isPrimary = ko.observable(isPrimary);
+
+    self.togglePrimary = function(){
+        if(self.isPrimary() === true){
+            self.isPrimary(false);
+        } else {
+            self.isPrimary(true);
+        }
+    }
 }
 
 // Overall viewmodel for this screen, along with initial state
@@ -47,7 +69,7 @@ function SqlBuildModel() {
         },
         {
             name:"varchar",
-            length:80
+            startingLength:80
         },
         {
             name:"char",
@@ -87,9 +109,16 @@ function SqlBuildModel() {
     ];    
 
     self.userPasswordTemplates = [
-        new Table("Users", self.dataTypes[1]),
-        new Table("Passwords", self.dataTypes[1])
+        new Table("Users", [ 
+            new Value("UserID", self.dataTypes[8], true),
+            new Value("User", self.dataTypes[11], false)
+            ]),
+        new Table("Passwords", [
+            new Value("PasswordID",self.dataTypes[8], true),
+            new Value("Password", self.dataTypes[11], false)
+            ])
     ];
+
 
 
     // Editable data
@@ -126,7 +155,15 @@ function SqlBuildModel() {
         self.architecture.remove(table);
     }
 }
+
+
+
 $(document).ready(function(){
-    ko.applyBindings(new SqlBuildModel());
+    var test = new SqlBuildModel();
+
+    ko.applyBindings(test);
     $('.chosen-select').chosen();
+    console.log($('#test'));
+
+
 });

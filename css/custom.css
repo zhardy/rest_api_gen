@@ -1,0 +1,18 @@
+.glyphicon-remove{
+	color:red;
+}
+
+.glyphicon-star, .glyphicon-star-empty {
+	color:gold;
+	text-shadow: black;
+	font-size: 1.6em;
+}
+
+
+.glyphicon-star-empty{
+	opacity:0;
+}
+
+.glyphicon-star-empty:hover {
+	opacity: 1;
+}
