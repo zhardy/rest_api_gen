@@ -27,20 +27,39 @@
                 </div>
 				<br>
                 <div class="value-container" data-bind="foreach: values">
+                <br>
                     <div class="row">       
 						<div class="col-xs-1">
 							<label>Ref?</label>
 							<input type="checkbox" data-bind="checked: foreignReference"/>
 						</div>
                         <div class="col-xs-2">
-                            <input data-bind="value: name, if: !foreignReference()"/>
+                            <!-- ko if: !foreignReference() -->
+                            <input data-bind="value: name"/>
+                            <!-- /ko -->
+
+                            <!-- ko if: foreignReference() -->
+                            <select data-bind="options: $root.architecture(), value:table, optionsText: 'name'">
+                                
+                            </select>
+                            <!-- /ko -->
+
 							<!--<select data-bind="options: $parent.architecture(), value:name, optionsText: 'name'" class="chosen-select">
 							</select> -->
                         </div>
                         <div class="col-xs-3">
+                            <!-- ko if:!foreignReference() -->
                             <select data-bind="options: $root.dataTypes, value: type, optionsText: 'name'" class="chosen-select">
                                 
                             </select>
+                            <!-- /ko -->
+
+                            <!-- ko if:foreignReference() -->
+                            <select data-bind="options: referenceOptions, value:value, optionsText: 'name'" >
+                                
+
+                            </select>
+                            <!-- /ko -->
                         </div>
                         
                         <div class="col-xs-2">
@@ -56,6 +75,9 @@
                                 <button data-bind="click: $parent.removeValue" class="glyphicon glyphicon-remove btn"></button>
                             </a>
                         </div>
+<!--                         <div class="col-xs-1">
+                            <input type="checkbox" data-bind="checked:references">
+                        </div> -->
                         <br>
                         <br>
                     </div>
@@ -68,6 +90,7 @@
                 <br>
             </div>
             <button class="btn" data-bind="click: addTable">Create another table</button>
+            <button class="btn" data-bind="click: generateExport">Generate and Export</button>
 
         </div>
 

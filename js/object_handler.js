@@ -20,9 +20,21 @@ function Value(name, type, isPrimary){
     self.type = ko.observable(type);
     self.isPrimary = ko.observable(isPrimary);
 	self.foreignReference = ko.observable(false);
+    self.table = ko.observable();
+    self.referenceOptions = ko.computed( function(){
+        return this.table() != undefined ? this.table().values() : undefined;
+    }, self);
+
+    self.value = ko.observable();
+
     self.togglePrimary = function(){
         self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
     }
+    self.foreignReference.subscribe(function(newData){
+        setTimeout(function(){
+            $('.chosen-select').chosen();
+        }, 3);
+    });
 }
 
 // Overall viewmodel for this screen, along with initial state
@@ -95,11 +107,7 @@ function SqlBuildModel() {
             name:"interval"
         },
         {
-            name:"boolean",
-            values: [ 
-            true,
-            false
-            ]
+            name:"boolean"
         },
         {
             name:"Custom (enum)"
@@ -129,7 +137,7 @@ function SqlBuildModel() {
                     self.architecture.push(template);
                 }
             });
-            $('.chosen-select').chosen();
+            $('.chosen-select').chosen({width:'85%'});
         }
         if(newData === false){
             self.userPasswordTemplates.forEach(function(template){
@@ -140,9 +148,6 @@ function SqlBuildModel() {
 
         }
     });
-    
-
-
 
     // Operations
     self.addTable = function() {
@@ -155,6 +160,30 @@ function SqlBuildModel() {
     self.removeTable = function(table) { 
         self.architecture.remove(table);
     }
+
+    self.generateExport = function(){
+        var array = [];
+        self.architecture().forEach(function(table){
+            var valueArray = [];
+            table.values().forEach(function(value){
+                var valObj = {name: value.name};
+                valObj.type = value.type();
+
+                valObj.isPrimary = value.isPrimary(); 
+                valObj.isReference = value.foreignReference();
+                if(valObj.isReference){
+                    valObj.foreignTable = value.table().name;
+                    valObj.foreignValue = value.value().name;
+                    valObj.type = value.value().type();
+                    valObj.name = value.value().name;
+                }
+                valueArray.push(valObj);
+            });
+            var tableObj = {name: table.name, values: valueArray}
+            array.push(tableObj);
+        });
+        console.log(JSON.stringify(array));
+    }
 }
 
 
@@ -162,6 +191,5 @@ function SqlBuildModel() {
 $(document).ready(function(){
     var test = new SqlBuildModel();
     ko.applyBindings(test);
-    $('.chosen-select').chosen();
 
 });
