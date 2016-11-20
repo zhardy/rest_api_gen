@@ -27,10 +27,6 @@ function Value(name, type, isPrimary){
 
     self.value = ko.observable();
 
-    self.value.subscribe(function(newData){
-        console.log(newData);
-    });
-
     self.togglePrimary = function(){
         self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
     }
@@ -171,7 +167,8 @@ function SqlBuildModel() {
             var valueArray = [];
             table.values().forEach(function(value){
                 var valObj = {name: value.name};
-                valObj.type = value.type().length === undefined ? value.type().name : value.type();
+                valObj.type = value.type();
+
                 valObj.isPrimary = value.isPrimary(); 
                 valObj.isReference = value.foreignReference();
                 if(valObj.isReference){
