@@ -20,6 +20,17 @@ function Value(name, type, isPrimary){
     self.type = ko.observable(type);
     self.isPrimary = ko.observable(isPrimary);
 	self.foreignReference = ko.observable(false);
+    self.table = ko.observable();
+    self.referenceOptions = ko.computed( function(){
+        return this.table() != undefined ? this.table().values() : undefined;
+    }, self);
+
+    self.value = ko.observable();
+
+    self.value.subscribe(function(newData){
+        console.log(newData);
+    });
+
     self.togglePrimary = function(){
         self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
     }
@@ -141,9 +152,6 @@ function SqlBuildModel() {
 
         }
     });
-    
-
-
 
     // Operations
     self.addTable = function() {
@@ -155,6 +163,29 @@ function SqlBuildModel() {
     }
     self.removeTable = function(table) { 
         self.architecture.remove(table);
+    }
+
+    self.generateExport = function(){
+        var array = [];
+        self.architecture().forEach(function(table){
+            var valueArray = [];
+            table.values().forEach(function(value){
+                var valObj = {name: value.name};
+                valObj.type = value.type().length === undefined ? value.type().name : value.type();
+                valObj.isPrimary = value.isPrimary(); 
+                valObj.isReference = value.foreignReference();
+                if(valObj.isReference){
+                    valObj.foreignTable = value.table().name;
+                    valObj.foreignValue = value.value().name;
+                    valObj.type = value.value().type();
+                    valObj.name = value.value().name;
+                }
+                valueArray.push(valObj);
+            });
+            var tableObj = {name: table.name, values: valueArray}
+            array.push(tableObj);
+        });
+        console.log(JSON.stringify(array));
     }
 }
 

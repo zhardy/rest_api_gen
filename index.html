@@ -35,11 +35,13 @@
 						</div>
                         <div class="col-xs-2">
                             <!-- ko if: !foreignReference() -->
-                            <input data-bind="if: foreignReference(), value: name"/>
+                            <input data-bind="value: name"/>
                             <!-- /ko -->
 
                             <!-- ko if: foreignReference() -->
-                            <select data-bind="options: $root.architecture(), optionsText: 'name'" class="chosen-select"></select>
+                            <select data-bind="options: $root.architecture(), value:table, optionsText: 'name'">
+                                
+                            </select>
                             <!-- /ko -->
 
 							<!--<select data-bind="options: $parent.architecture(), value:name, optionsText: 'name'" class="chosen-select">
@@ -53,7 +55,10 @@
                             <!-- /ko -->
 
                             <!-- ko if:foreignReference() -->
-                            <!-- <select data-bind="options: "> -->
+                            <select data-bind="options: referenceOptions, value:value, optionsText: 'name'" >
+                                
+
+                            </select>
                             <!-- /ko -->
                         </div>
                         
@@ -85,6 +90,7 @@
                 <br>
             </div>
             <button class="btn" data-bind="click: addTable">Create another table</button>
+            <button class="btn" data-bind="click: generateExport">Generate and Export</button>
 
         </div>
 
