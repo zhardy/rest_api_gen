@@ -182,14 +182,14 @@ function SqlBuildModel() {
             var tableObj = {name: table.name, values: valueArray}
             array.push(tableObj);
         });
-        console.log(JSON.stringify(array));
+        console.save(JSON.stringify(array), "data.json");
     }
 }
 
 
 
 $(document).ready(function(){
-    var test = new SqlBuildModel();
-    ko.applyBindings(test);
+    var SQLBuild = new SqlBuildModel();
+    ko.applyBindings(SQLBuild);
 
 });
