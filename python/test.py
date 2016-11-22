@@ -1,4 +1,4 @@
-import os, json
+import sys, os, json
 
 #Constants
 
@@ -17,14 +17,19 @@ FOREIGN_KEY = "foreign key"
 REF = " references "
 LINEBR = "\n";
 
-with open('/home/zack/Downloads/data (1).json') as data_file:
+filepath = '/home/zack/Downloads/data (1).json'
+
+if len(sys.argv) > 1:
+	filepath = sys.argv[1]
+
+with open(filepath) as data_file:
 	data = json.load(data_file);
 
 db_arch = open('db_architecture.sql', 'w+')
 db_arch.write(FIRST_LINE + LINEBR + LINEBR)
 
 for table in data:
-	db_arch.write(CREATE_TABLE_BEGIN + table["name"] + OPEN_PARAN +LINEBR)
+	db_arch.write(CREATE_TABLE_BEGIN + table["name"] + OPEN_PARAN + LINEBR)
 	primary = None
 	foreign = []
 
