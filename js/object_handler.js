@@ -1,48 +1,37 @@
+
+
 // Class to represent a row in the seat reservations grid
 function Table(name, values) {
     var self = this;
     self.name = name;
     self.values = ko.observableArray(values);
-
     self.removeValue = function(value){
         self.values.remove(value);
     }
 
     self.addValue = function(){
         self.values.push(new Value("", {}, false));
-        $('.chosen-select').chosen();
     }
+
+    self.primary = ko.observable(values[0]);
+
+    self.togglePrimary = function(newValue){
+        self.primary(newValue);
+        self.values().forEach(function(val){
+            if(val === newValue){
+                val.isPrimary(true);
+            } else {
+                val.isPrimary(false);
+            }
+        });
+    }
+
+
 }
 
-function Value(name, type, isPrimary){
+function Value(name, value, isPrimary){
     var self = this;
     self.name = name;
-    self.type = ko.observable(type);
-    self.isPrimary = ko.observable(isPrimary);
-	self.foreignReference = ko.observable(false);
-    self.table = ko.observable();
-    self.referenceOptions = ko.computed( function(){
-        return this.table() != undefined ? this.table().values() : undefined;
-    }, self);
-
-    self.value = ko.observable();
-
-    self.togglePrimary = function(){
-        self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
-    }
-    self.foreignReference.subscribe(function(newData){
-        setTimeout(function(){
-            $('.chosen-select').chosen();
-        }, 3);
-    });
-}
-
-// Overall viewmodel for this screen, along with initial state
-function SqlBuildModel() {
-    var self = this;
-    self.userPasswords = ko.observable(false);
-
-
     self.dataTypes = [
         {
             name: "smallint"
@@ -112,16 +101,41 @@ function SqlBuildModel() {
         {
             name:"Custom (enum)"
         }
-    ];    
+    ];
+    self.type = value != undefined ? ko.observable(self.dataTypes[value]) : ko.observable(self.dataTypes[1]);
+    self.isPrimary = ko.observable(isPrimary);
+	self.foreignReference = ko.observable(false);
+    self.table = ko.observable();
+    self.referenceValueOptions = ko.computed( function(){
+        return this.table() != undefined ? this.table().values() : undefined;
+    }, self);
 
+    self.foreignType = ko.observable();
+
+    self.architecture = function(referenceArchitecture){
+        var returnArray = [];
+        referenceArchitecture().forEach(function(table){
+            if(table.values.indexOf(self) < 0){
+                returnArray.push(table);
+            }
+        });
+        return returnArray;
+    }
+
+}
+
+// Overall viewmodel for this screen, along with initial state
+function SqlBuildModel() {
+    var self = this;
+    self.userPasswords = ko.observable(false);
     self.userPasswordTemplates = [
         new Table("Users", [ 
-            new Value("UserID", self.dataTypes[8], true),
-            new Value("User", self.dataTypes[11], false)
+            new Value("UserID", 8, true),
+            new Value("User", 11, false)
             ]),
         new Table("Passwords", [
-            new Value("PasswordID",self.dataTypes[8], true),
-            new Value("Password", self.dataTypes[11], false)
+            new Value("PasswordID", 8, true),
+            new Value("Password", 11, false)
             ])
     ];
 
@@ -137,7 +151,6 @@ function SqlBuildModel() {
                     self.architecture.push(template);
                 }
             });
-            $('.chosen-select').chosen({width:'85%'});
         }
         if(newData === false){
             self.userPasswordTemplates.forEach(function(template){
@@ -152,11 +165,11 @@ function SqlBuildModel() {
     // Operations
     self.addTable = function() {
         self.architecture.push(
-            new Table("", [new Value("ID", self.dataTypes[8], true)
+            new Table("", [new Value("ID", 8, true)
                 ])
             );
-        $('.chosen-select').chosen();
     }
+
     self.removeTable = function(table) { 
         self.architecture.remove(table);
     }
