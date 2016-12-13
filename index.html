@@ -11,7 +11,10 @@
             <label>User Passwords?</label>
             <input type="checkbox" data-bind="checked: userPasswords">
 
-            <div class="row-container" data-bind="foreach: architecture">
+            <label>Custom values?</label>
+            <input type="checkbox" data-bind="checked: allowCustom">
+
+            <div class="architecture-container" data-bind="foreach: architecture">
                 <div class="row">
                         <div class="col-xs-2">
                             <input data-bind="value: name" class="form-control"/>
@@ -37,7 +40,7 @@
                             <!-- /ko -->
 
                             <!-- ko if: foreignReference() -->
-                            <select data-bind="options: architecture($root.architecture), value:table, optionsText: 'name'" class="form-control">
+                            <select data-bind="options: architecture($root.architecture, $parent), value:table, optionsText: 'name'" class="form-control">
                                 
                             </select>
                             <!-- /ko -->
@@ -87,8 +90,34 @@
                 </div>
                 <br>
             </div>
+
+
+            <!-- ko if: allowCustom -->
+            <div class="custom-value-container">
+            	<div class="row">
+            		<div class="col-xs-4">
+            			<label>Name</label>
+	            		<input type="text" data-bind="value:name"/>
+            		</div>
+            		<div class="col-xs-4">
+            			<textarea row="4" cols="70" data-bind="value:listOfValues">
+
+	            		</textarea>
+            		</div>
+            		<div class="col-xs-4">
+            			<button class="btn" data-bind="click: generateCustom">Generate Custom</button>
+            		</div>
+            	</div>
+            	<br>
+            	
+            	<br><br>
+
+            </div>
+            <!-- /ko -->
+
             <button class="btn" data-bind="click: addTable">Create another table</button>
             <button class="btn" data-bind="click: generateExport">Generate and Export</button>
+
 
         </div>
 

@@ -25,14 +25,21 @@ function Table(name, values) {
             }
         });
     }
+}
 
-
+function CustomValue(name, values){
+    self.name = name;
+    self.value = ko.observable(values);
+    self.listOfValues = [];
+    self.generateCustom = function(){
+        listOfValues = value.split(',');
+    }
 }
 
 function Value(name, value, isPrimary){
     var self = this;
     self.name = name;
-    self.dataTypes = [
+    self.dataTypes = ko.observableArray([
         {
             name: "smallint"
         },
@@ -101,8 +108,8 @@ function Value(name, value, isPrimary){
         {
             name:"Custom (enum)"
         }
-    ];
-    self.type = value != undefined ? ko.observable(self.dataTypes[value]) : ko.observable(self.dataTypes[1]);
+    ]);
+    self.type = value != undefined ? ko.observable(self.dataTypes()[value]) : ko.observable(self.dataTypes()[1]);
     self.isPrimary = ko.observable(isPrimary);
 	self.foreignReference = ko.observable(false);
     self.table = ko.observable();
@@ -112,7 +119,7 @@ function Value(name, value, isPrimary){
 
     self.foreignType = ko.observable();
 
-    self.architecture = function(referenceArchitecture){
+    self.architecture = function(referenceArchitecture, parentTable){
         var returnArray = [];
         referenceArchitecture().forEach(function(table){
             if(table.values.indexOf(self) < 0){
@@ -139,8 +146,6 @@ function SqlBuildModel() {
             ])
     ];
 
-
-
     // Editable data
     self.architecture = ko.observableArray();
 
@@ -162,10 +167,19 @@ function SqlBuildModel() {
         }
     });
 
+    self.customValues = ko.observableArray();
+    self.allowCustom = ko.observable();
+
+    self.currentCustom = ko.observable(new CustomValue("Name","Put some text here separated by commas for custom values"));
+
+
+
+
     // Operations
     self.addTable = function() {
         self.architecture.push(
-            new Table("", [new Value("ID", 8, true)
+            new Table("", [
+                new Value("ID", 8, true)
                 ])
             );
     }
@@ -204,5 +218,4 @@ function SqlBuildModel() {
 $(document).ready(function(){
     var SQLBuild = new SqlBuildModel();
     ko.applyBindings(SQLBuild);
-
 });
