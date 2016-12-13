@@ -30,10 +30,7 @@ function Table(name, values) {
 function CustomValue(name, values){
     self.name = name;
     self.value = ko.observable(values);
-    self.listOfValues = [];
-    self.generateCustom = function(){
-        listOfValues = value.split(',');
-    }
+    self.listOfValues = ;
 }
 
 function Value(name, value, isPrimary){
@@ -171,9 +168,6 @@ function SqlBuildModel() {
     self.allowCustom = ko.observable();
 
     self.currentCustom = ko.observable(new CustomValue("Name","Put some text here separated by commas for custom values"));
-
-
-
 
     // Operations
     self.addTable = function() {
