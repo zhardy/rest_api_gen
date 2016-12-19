@@ -1,18 +1,19 @@
+# Rest API Generator
+
+Built in KnockoutJS and Python, this teeny, tiny website, which lives locally on your computer, provides a graphical interface for creating, generating, and implementing a postgres SQL database for use in some kinda web development. Very simple, very easy to use.
+
+#Future
+
+1) Provide extensibility for Python script to accept commandline arguments
+2) Further extend Python script to generate nodeJS/expressJS/squel and when.js routes for use in a REST API
 
 
-Select
-Insert
-Update
-Delete
-
-Users checkbox auotcreates UserName and Passwords table
-
-
-sudo apt-get install python
-
-http://stackoverflow.com/questions/3844360/best-way-to-generate-xml
-
-Libs used:
-devtools-snippet
-jquery
-knockoutjs
+Libraries used:
+* JavaScript
+	*devtools-snippet
+	*jquery
+	*knockoutjs
+* Python
+	*sys
+	*os
+	*json
