@@ -10,10 +10,10 @@ Built in KnockoutJS and Python, this teeny, tiny website, which lives locally on
 
 Libraries used:
 * JavaScript
-	*devtools-snippet
-	*jquery
-	*knockoutjs
+	* devtools-snippet
+	* jquery
+	* knockoutjs
 * Python
-	*sys
-	*os
-	*json
+	* sys
+	* os
+	* json
