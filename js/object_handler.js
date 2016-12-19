@@ -1,49 +1,72 @@
+
+
 // Class to represent a row in the seat reservations grid
-function Table(name, values) {
+function Table(name, values, dataTypes) {
     var self = this;
     self.name = name;
+    self.dataTypes = dataTypes;
     self.values = ko.observableArray(values);
-
     self.removeValue = function(value){
         self.values.remove(value);
     }
 
     self.addValue = function(){
-        self.values.push(new Value("", {}, false));
-        $('.chosen-select').chosen();
+        self.values.push(new Value("", 8, false, self.dataTypes));
     }
+
+    self.primary = ko.observable(values[0]);
+
+    self.togglePrimary = function(newValue){
+        self.primary(newValue);
+        self.values().forEach(function(val){
+            if(val === newValue){
+                val.isPrimary(true);
+            } else {
+                val.isPrimary(false);
+            }
+        });
+    }
+
 }
 
-function Value(name, type, isPrimary){
+function CustomValue(name, values){
+    var self = this;
+    self.name = ko.observable(name);
+    self.valueText = ko.observable(values);
+}
+
+function Value(name, value, isPrimary, dataTypes){
     var self = this;
     self.name = name;
-    self.type = ko.observable(type);
+    self.dataTypes = dataTypes;
+    self.type = value != undefined ? ko.observable(self.dataTypes()[value]) : ko.observable(self.dataTypes()[1]);
     self.isPrimary = ko.observable(isPrimary);
 	self.foreignReference = ko.observable(false);
     self.table = ko.observable();
-    self.referenceOptions = ko.computed( function(){
+    self.referenceValueOptions = ko.computed( function(){
         return this.table() != undefined ? this.table().values() : undefined;
     }, self);
 
-    self.value = ko.observable();
+    self.foreignType = ko.observable();
 
-    self.togglePrimary = function(){
-        self.isPrimary() === true ? self.isPrimary(false) : self.isPrimary(true);
+    self.architecture = function(referenceArchitecture, parentTable){
+        var returnArray = [];
+        referenceArchitecture().forEach(function(table){
+            if(table.values.indexOf(self) < 0){
+                returnArray.push(table);
+            }
+        });
+        return returnArray;
     }
-    self.foreignReference.subscribe(function(newData){
-        setTimeout(function(){
-            $('.chosen-select').chosen();
-        }, 3);
-    });
+
+
+
 }
 
 // Overall viewmodel for this screen, along with initial state
 function SqlBuildModel() {
     var self = this;
-    self.userPasswords = ko.observable(false);
-
-
-    self.dataTypes = [
+    self.dataTypes = ko.observableArray([
         {
             name: "smallint"
         },
@@ -108,36 +131,37 @@ function SqlBuildModel() {
         },
         {
             name:"boolean"
-        },
-        {
-            name:"Custom (enum)"
         }
-    ];    
+    ]);
+
+    self.createUserPasswords = ko.observable(false);
+    self.allowCustom = ko.observable(false);
+    self.architecture = ko.observableArray();
+    self.customValues = ko.observableArray();
+    self.currentCustom = ko.observable(new CustomValue("Name", "Put some text here separated by commas for custom values"));
+
+
 
     self.userPasswordTemplates = [
         new Table("Users", [ 
-            new Value("UserID", self.dataTypes[8], true),
-            new Value("User", self.dataTypes[11], false)
+            new Value("UserID", 8, true, self.dataTypes),
+            new Value("User", 11, false, self.dataTypes)
             ]),
         new Table("Passwords", [
-            new Value("PasswordID",self.dataTypes[8], true),
-            new Value("Password", self.dataTypes[11], false)
+            new Value("PasswordID", 8, true, self.dataTypes),
+            new Value("Password", 11, false, self.dataTypes)
             ])
     ];
 
-
-
     // Editable data
-    self.architecture = ko.observableArray();
 
-    self.userPasswords.subscribe(function(newData){
+    self.createUserPasswords.subscribe(function(newData){
         if(newData === true){
             self.userPasswordTemplates.forEach(function(template){
                 if(self.architecture().indexOf(template) === -1){
                     self.architecture.push(template);
                 }
             });
-            $('.chosen-select').chosen({width:'85%'});
         }
         if(newData === false){
             self.userPasswordTemplates.forEach(function(template){
@@ -149,20 +173,40 @@ function SqlBuildModel() {
         }
     });
 
+
+
+
     // Operations
     self.addTable = function() {
         self.architecture.push(
-            new Table("", [new Value("ID", self.dataTypes[8], true)
-                ])
+            new Table("", [
+                new Value("ID", 8, true, self.dataTypes)
+                ], self.dataTypes)
             );
-        $('.chosen-select').chosen();
     }
+
     self.removeTable = function(table) { 
         self.architecture.remove(table);
     }
 
+    self.generateCustom = function(){
+        var custom = self.currentCustom();
+        self.dataTypes.push({ name: custom.name()});
+        self.customValues.push({
+            name: custom.name(),
+            values: custom.valueText().split(','),
+            type: "Custom"
+            })
+        self.currentCustom().name("Name");
+        self.currentCustom().valueText("Put some text here separated by commas for custom values");
+    }
+
     self.generateExport = function(){
         var array = [];
+        self.customValues().forEach(function(customValueObject){
+            array.push(customValueObject);
+        });
+
         self.architecture().forEach(function(table){
             var valueArray = [];
             table.values().forEach(function(value){
@@ -173,9 +217,9 @@ function SqlBuildModel() {
                 valObj.isReference = value.foreignReference();
                 if(valObj.isReference){
                     valObj.foreignTable = value.table().name;
-                    valObj.foreignValue = value.value().name;
-                    valObj.type = value.value().type();
-                    valObj.name = value.value().name;
+                    valObj.foreignValue = value.foreignType().name;
+                    valObj.type = value.foreignType().type();
+                    valObj.name = value.foreignType().name;
                 }
                 valueArray.push(valObj);
             });
@@ -191,5 +235,4 @@ function SqlBuildModel() {
 $(document).ready(function(){
     var SQLBuild = new SqlBuildModel();
     ko.applyBindings(SQLBuild);
-
 });
