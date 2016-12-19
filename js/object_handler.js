@@ -31,7 +31,7 @@ function Table(name, values, dataTypes) {
 
 function CustomValue(name, values){
     var self = this;
-    self.name = name;
+    self.name = ko.observable(name);
     self.valueText = ko.observable(values);
 }
 
@@ -138,8 +138,7 @@ function SqlBuildModel() {
     self.allowCustom = ko.observable(false);
     self.architecture = ko.observableArray();
     self.customValues = ko.observableArray();
-    var defaultCustomValue = new CustomValue("Name", "Put some text here separated by commas for custom values");
-    self.currentCustom = ko.observable(defaultCustomValue);
+    self.currentCustom = ko.observable(new CustomValue("Name", "Put some text here separated by commas for custom values"));
 
 
 
@@ -192,16 +191,14 @@ function SqlBuildModel() {
 
     self.generateCustom = function(){
         var custom = self.currentCustom();
-        self.dataTypes.push({ name: custom.name});
+        self.dataTypes.push({ name: custom.name()});
         self.customValues.push({
-            name: custom.name,
+            name: custom.name(),
             values: custom.valueText().split(','),
             type: "Custom"
             })
-        self.currentCustom.name = defaultCustomValue.name;
-        console.log(defaultCustomValue === self.currentCustom());
-        self.currentCustom().valueText(defaultCustomValue.valueText());
-        //console.log(self.currentCustom().valueText());
+        self.currentCustom().name("Name");
+        self.currentCustom().valueText("Put some text here separated by commas for custom values");
     }
 
     self.generateExport = function(){
@@ -220,9 +217,9 @@ function SqlBuildModel() {
                 valObj.isReference = value.foreignReference();
                 if(valObj.isReference){
                     valObj.foreignTable = value.table().name;
-                    valObj.foreignValue = value.value().name;
-                    valObj.type = value.value().type();
-                    valObj.name = value.value().name;
+                    valObj.foreignValue = value.foreignType().name;
+                    valObj.type = value.foreignType().type();
+                    valObj.name = value.foreignType().name;
                 }
                 valueArray.push(valObj);
             });
