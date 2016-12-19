@@ -9,7 +9,7 @@
         <div class="container">
             <h2>Number of tables: <span data-bind="text: architecture().length"></span></h2>
             <label>User Passwords?</label>
-            <input type="checkbox" data-bind="checked: userPasswords">
+            <input type="checkbox" data-bind="checked: createUserPasswords">
 
             <label>Custom values?</label>
             <input type="checkbox" data-bind="checked: allowCustom">
@@ -96,16 +96,18 @@
             <div class="custom-value-container">
             	<div class="row">
             		<div class="col-xs-4">
-            			<label>Name</label>
-	            		<input type="text" data-bind="value:name"/>
+            			<label>Name of Custom Value:</label><br>
+	            		<input type="text" data-bind="value:$root.currentCustom().name"/>
             		</div>
             		<div class="col-xs-4">
-            			<textarea row="4" cols="70" data-bind="value:listOfValues">
+            			<br>
+            			<textarea row="1" cols="30" data-bind="value:$root.currentCustom().valueText">
 
 	            		</textarea>
             		</div>
             		<div class="col-xs-4">
-            			<button class="btn" data-bind="click: generateCustom">Generate Custom</button>
+            			<br>
+            			<button class="btn" data-bind="click: $root.generateCustom">Generate Custom</button>
             		</div>
             	</div>
             	<br>

@@ -1,16 +1,17 @@
 
 
 // Class to represent a row in the seat reservations grid
-function Table(name, values) {
+function Table(name, values, dataTypes) {
     var self = this;
     self.name = name;
+    self.dataTypes = dataTypes;
     self.values = ko.observableArray(values);
     self.removeValue = function(value){
         self.values.remove(value);
     }
 
     self.addValue = function(){
-        self.values.push(new Value("", {}, false));
+        self.values.push(new Value("", 8, false, self.dataTypes));
     }
 
     self.primary = ko.observable(values[0]);
@@ -25,17 +26,46 @@ function Table(name, values) {
             }
         });
     }
+
 }
 
 function CustomValue(name, values){
-    self.name = name;
-    self.value = ko.observable(values);
-    self.listOfValues = ;
-}
-
-function Value(name, value, isPrimary){
     var self = this;
     self.name = name;
+    self.valueText = ko.observable(values);
+}
+
+function Value(name, value, isPrimary, dataTypes){
+    var self = this;
+    self.name = name;
+    self.dataTypes = dataTypes;
+    self.type = value != undefined ? ko.observable(self.dataTypes()[value]) : ko.observable(self.dataTypes()[1]);
+    self.isPrimary = ko.observable(isPrimary);
+	self.foreignReference = ko.observable(false);
+    self.table = ko.observable();
+    self.referenceValueOptions = ko.computed( function(){
+        return this.table() != undefined ? this.table().values() : undefined;
+    }, self);
+
+    self.foreignType = ko.observable();
+
+    self.architecture = function(referenceArchitecture, parentTable){
+        var returnArray = [];
+        referenceArchitecture().forEach(function(table){
+            if(table.values.indexOf(self) < 0){
+                returnArray.push(table);
+            }
+        });
+        return returnArray;
+    }
+
+
+
+}
+
+// Overall viewmodel for this screen, along with initial state
+function SqlBuildModel() {
+    var self = this;
     self.dataTypes = ko.observableArray([
         {
             name: "smallint"
@@ -101,52 +131,32 @@ function Value(name, value, isPrimary){
         },
         {
             name:"boolean"
-        },
-        {
-            name:"Custom (enum)"
         }
     ]);
-    self.type = value != undefined ? ko.observable(self.dataTypes()[value]) : ko.observable(self.dataTypes()[1]);
-    self.isPrimary = ko.observable(isPrimary);
-	self.foreignReference = ko.observable(false);
-    self.table = ko.observable();
-    self.referenceValueOptions = ko.computed( function(){
-        return this.table() != undefined ? this.table().values() : undefined;
-    }, self);
 
-    self.foreignType = ko.observable();
+    self.createUserPasswords = ko.observable(false);
+    self.allowCustom = ko.observable(false);
+    self.architecture = ko.observableArray();
+    self.customValues = ko.observableArray();
+    var defaultCustomValue = new CustomValue("Name", "Put some text here separated by commas for custom values");
+    self.currentCustom = ko.observable(defaultCustomValue);
 
-    self.architecture = function(referenceArchitecture, parentTable){
-        var returnArray = [];
-        referenceArchitecture().forEach(function(table){
-            if(table.values.indexOf(self) < 0){
-                returnArray.push(table);
-            }
-        });
-        return returnArray;
-    }
 
-}
 
-// Overall viewmodel for this screen, along with initial state
-function SqlBuildModel() {
-    var self = this;
-    self.userPasswords = ko.observable(false);
     self.userPasswordTemplates = [
         new Table("Users", [ 
-            new Value("UserID", 8, true),
-            new Value("User", 11, false)
+            new Value("UserID", 8, true, self.dataTypes),
+            new Value("User", 11, false, self.dataTypes)
             ]),
         new Table("Passwords", [
-            new Value("PasswordID", 8, true),
-            new Value("Password", 11, false)
+            new Value("PasswordID", 8, true, self.dataTypes),
+            new Value("Password", 11, false, self.dataTypes)
             ])
     ];
 
     // Editable data
-    self.architecture = ko.observableArray();
 
-    self.userPasswords.subscribe(function(newData){
+    self.createUserPasswords.subscribe(function(newData){
         if(newData === true){
             self.userPasswordTemplates.forEach(function(template){
                 if(self.architecture().indexOf(template) === -1){
@@ -164,17 +174,15 @@ function SqlBuildModel() {
         }
     });
 
-    self.customValues = ko.observableArray();
-    self.allowCustom = ko.observable();
 
-    self.currentCustom = ko.observable(new CustomValue("Name","Put some text here separated by commas for custom values"));
+
 
     // Operations
     self.addTable = function() {
         self.architecture.push(
             new Table("", [
-                new Value("ID", 8, true)
-                ])
+                new Value("ID", 8, true, self.dataTypes)
+                ], self.dataTypes)
             );
     }
 
@@ -182,8 +190,26 @@ function SqlBuildModel() {
         self.architecture.remove(table);
     }
 
+    self.generateCustom = function(){
+        var custom = self.currentCustom();
+        self.dataTypes.push({ name: custom.name});
+        self.customValues.push({
+            name: custom.name,
+            values: custom.valueText().split(','),
+            type: "Custom"
+            })
+        self.currentCustom.name = defaultCustomValue.name;
+        console.log(defaultCustomValue === self.currentCustom());
+        self.currentCustom().valueText(defaultCustomValue.valueText());
+        //console.log(self.currentCustom().valueText());
+    }
+
     self.generateExport = function(){
         var array = [];
+        self.customValues().forEach(function(customValueObject){
+            array.push(customValueObject);
+        });
+
         self.architecture().forEach(function(table){
             var valueArray = [];
             table.values().forEach(function(value){
