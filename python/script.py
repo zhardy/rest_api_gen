@@ -20,8 +20,12 @@ PRIMARY_KEY = "primary key "
 FOREIGN_KEY = "foreign key"
 REF = " references "
 LINEBR = "\n";
-
 filepath = '/home/zack/Downloads/data (6).json'
+
+if len(sys.argv) == 0:
+	print "Please provide a filepath for the JSON"
+else:
+	filepath = sys.argv[0]
 
 if len(sys.argv) > 1:
 	filepath = sys.argv[1]
