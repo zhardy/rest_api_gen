@@ -8,7 +8,7 @@ Built in KnockoutJS and Python, this teeny, tiny website, which lives locally on
 2) Further extend Python script to generate nodeJS/expressJS/squel and when.js routes for use in a REST API
 
 
-Libraries used:
+## Libraries used:
 * JavaScript
 	* devtools-snippet
 	* jquery
