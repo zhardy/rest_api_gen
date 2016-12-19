@@ -1,29 +1,40 @@
-select 'drop table if exists "' || tablename || '" cascade;' from pg_tables;
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
 
-create type writer_type as enum ('Fiction', 'Non-Fiction', 'Poetry');
-create type staffing_type as enum ('Writer-in-Residence', 'Faculty');
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+
+
+create type writer_type as enum ('Fiction','Non-Fiction','Poetry');
+create type staffing_type as enum ('Writer-in-Residence','Faculty');
 
 create table Users(
 UserID serial,
-User varchar,
+Username varchar(80),
 primary key (UserID)
 );
 
 create table Passwords(
 PasswordID serial,
-Password varchar,
+Password varchar(80),
 primary key (PasswordID)
 );
 
 create table Content(
 ContentID serial,
-Description varchar,
+Description varchar(80),
 primary key (ContentID)
+);
+
+create table Images(
+ImageID serial,
+ImagePath varchar(80),
+primary key (ImageID)
 );
 
 create table Writers(
 WriterID serial,
-WriterName varchar,
+WriterName varchar(80),
 WriterType writer_type,
 StaffingType staffing_type,
 ImageID serial,
@@ -35,7 +46,7 @@ primary key (WriterID)
 
 create table CraftSessions(
 CraftSessionID serial,
-CraftSessionName varchar,
+CraftSessionName varchar(80),
 ContentID serial,
 WriterID serial,
 foreign key(ContentID) references Content,
@@ -53,18 +64,12 @@ primary key (ReadingID)
 
 create table Workshops(
 WorkshopID serial,
-WorkshopName varchar,
+WorkshopName varchar(80),
 ContentID serial,
 WriterID serial,
 foreign key(ContentID) references Content,
 foreign key(WriterID) references Writers,
 primary key (WorkshopID)
-);
-
-create table Images(
-ImageID serial,
-ImagePath varchar,
-primary key (ImageID)
 );
 
 create table UserToPassword(
@@ -78,8 +83,8 @@ primary key (UserToPasswordID)
 
 create table Sponsors(
 SponsorID serial,
-SponsorName varchar,
-Link varchar,
+SponsorName varchar(80),
+Link varchar(80),
 ContentID serial,
 foreign key(ContentID) references Content,
 primary key (SponsorID)
