@@ -72,8 +72,7 @@ GRANT ALL ON SCHEMA public TO public;\n"""
 
 
 def rest_api_gen(filepath, location_for_api):
-	#str_to_call = "../node/node.sh " + location_for_api
-	subprocess.call(["../node/node.sh", location_for_api])
+	subprocess.call(["./node/node.sh", location_for_api])
 	# with open(filepath) as data_file:
 	# 	data = json.load(data_file)
 
@@ -86,7 +85,7 @@ def main():
 	else:
 		filepath = sys.argv[1]
 		# sql_schema(filepath)
-		rest_api_gen("filepath", "~/programming/test")
+		rest_api_gen("filepath", "../test")
 
 main()
 
