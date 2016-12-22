@@ -71,8 +71,8 @@ GRANT ALL ON SCHEMA public TO public;\n"""
 			db_arch.write(CLOSED_PARAN + SEMI + LINEBR + LINEBR)
 
 
-def rest_api_gen(filepath, location_for_api):
-	subprocess.call(["./node/node.sh", location_for_api])
+def rest_api_gen(filepath, shell_path, location_for_api):
+	subprocess.call([shell_path, location_for_api])
 	# with open(filepath) as data_file:
 	# 	data = json.load(data_file)
 
@@ -80,12 +80,17 @@ def rest_api_gen(filepath, location_for_api):
 
 
 def main():
-	if len(sys.argv) == 1:
-		filepath = input("Please provide a filepath for the JSON:\n")
+	if len(sys.argv) < 4:
+		filepath = raw_input("Please provide a filepath for the JSON:\n")
+		shell_path = raw_input("Please provide a filepath for the shell script:\n")
+		directory = raw_input("Please provide a filepath to create your new REST API:\n")
+
 	else:
 		filepath = sys.argv[1]
-		# sql_schema(filepath)
-		rest_api_gen("filepath", "../test")
+		shell_path = sys.argv[2]
+		directory = sys.argv[3]
+	#sql_schema(filepath)
+	rest_api_gen(filepath, shell_path, directory)
 
 main()
 
