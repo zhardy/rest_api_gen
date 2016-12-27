@@ -1,19 +1,16 @@
 DROP SCHEMA public CASCADE;
-
 CREATE SCHEMA public;
 
 GRANT ALL ON SCHEMA public TO postgres;
-
 GRANT ALL ON SCHEMA public TO public;
 
 
 create type writer_type as enum ('Fiction','Non-Fiction','Poetry');
-
 create type staffing_type as enum ('Writer-in-Residence','Faculty');
 
 create table Users(
 UserID serial,
-User varchar(80),
+Username varchar(80),
 primary key (UserID)
 );
 
@@ -92,4 +89,3 @@ ContentID serial,
 foreign key(ContentID) references Content,
 primary key (SponsorID)
 );
-
