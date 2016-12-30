@@ -1,0 +1,298 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs',
+1 verbose cli   '/usr/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'express-generator' ]
+2 info using npm@3.5.2
+3 info using node@v4.2.6
+4 verbose config Skipping project config: /home/zhardy/.npmrc. (matches userconfig)
+5 silly loadCurrentTree Starting
+6 silly install loadCurrentTree
+7 silly install readLocalPackageData
+8 silly fetchPackageMetaData express-generator
+9 silly fetchNamedPackageData express-generator
+10 silly mapToRegistry name express-generator
+11 silly mapToRegistry using default registry
+12 silly mapToRegistry registry https://registry.npmjs.org/
+13 silly mapToRegistry uri https://registry.npmjs.org/express-generator
+14 verbose request uri https://registry.npmjs.org/express-generator
+15 verbose request no auth needed
+16 info attempt registry request try #1 at 4:31:51 PM
+17 verbose request id c08b08f8ee9a4ffb
+18 verbose etag W/"5844f4e9-8dc5"
+19 verbose lastModified Mon, 05 Dec 2016 05:02:33 GMT
+20 http request GET https://registry.npmjs.org/express-generator
+21 http 304 https://registry.npmjs.org/express-generator
+22 verbose headers { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+22 verbose headers   via: '1.1 varnish',
+22 verbose headers   'cache-control': 'max-age=300',
+22 verbose headers   etag: 'W/"5844f4e9-8dc5"',
+22 verbose headers   age: '288',
+22 verbose headers   connection: 'keep-alive',
+22 verbose headers   'x-served-by': 'cache-iad2628-IAD',
+22 verbose headers   'x-cache': 'HIT',
+22 verbose headers   'x-cache-hits': '1',
+22 verbose headers   'x-timer': 'S1483133511.285220,VS0,VE0',
+22 verbose headers   vary: 'Accept-Encoding' }
+23 silly get cb [ 304,
+23 silly get   { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+23 silly get     via: '1.1 varnish',
+23 silly get     'cache-control': 'max-age=300',
+23 silly get     etag: 'W/"5844f4e9-8dc5"',
+23 silly get     age: '288',
+23 silly get     connection: 'keep-alive',
+23 silly get     'x-served-by': 'cache-iad2628-IAD',
+23 silly get     'x-cache': 'HIT',
+23 silly get     'x-cache-hits': '1',
+23 silly get     'x-timer': 'S1483133511.285220,VS0,VE0',
+23 silly get     vary: 'Accept-Encoding' } ]
+24 verbose etag https://registry.npmjs.org/express-generator from cache
+25 verbose get saving express-generator to /home/zhardy/.npm/registry.npmjs.org/express-generator/.cache.json
+26 silly install normalizeTree
+27 silly loadCurrentTree Finishing
+28 silly loadIdealTree Starting
+29 silly install loadIdealTree
+30 silly cloneCurrentTree Starting
+31 silly install cloneCurrentTreeToIdealTree
+32 silly cloneCurrentTree Finishing
+33 silly loadShrinkwrap Starting
+34 silly install loadShrinkwrap
+35 silly loadShrinkwrap Finishing
+36 silly loadAllDepsIntoIdealTree Starting
+37 silly install loadAllDepsIntoIdealTree
+38 silly resolveWithNewModule express-generator@4.14.0 checking installable status
+39 silly cache add args [ 'express-generator', null ]
+40 verbose cache add spec express-generator
+41 silly cache add parsed spec Result {
+41 silly cache add   raw: 'express-generator',
+41 silly cache add   scope: null,
+41 silly cache add   name: 'express-generator',
+41 silly cache add   rawSpec: '',
+41 silly cache add   spec: 'latest',
+41 silly cache add   type: 'tag' }
+42 silly addNamed express-generator@latest
+43 verbose addNamed "latest" is being treated as a dist-tag for express-generator
+44 info addNameTag [ 'express-generator', 'latest' ]
+45 silly mapToRegistry name express-generator
+46 silly mapToRegistry using default registry
+47 silly mapToRegistry registry https://registry.npmjs.org/
+48 silly mapToRegistry uri https://registry.npmjs.org/express-generator
+49 verbose addNameTag registry:https://registry.npmjs.org/express-generator not in flight; fetching
+50 verbose get https://registry.npmjs.org/express-generator not expired, no request
+51 silly addNameTag next cb for express-generator with tag latest
+52 silly addNamed express-generator@4.14.0
+53 verbose addNamed "4.14.0" is a plain semver version for express-generator
+54 silly cache afterAdd express-generator@4.14.0
+55 verbose afterAdd /home/zhardy/.npm/express-generator/4.14.0/package/package.json not in flight; writing
+56 verbose afterAdd /home/zhardy/.npm/express-generator/4.14.0/package/package.json written
+57 silly fetchNamedPackageData commander
+58 silly mapToRegistry name commander
+59 silly mapToRegistry using default registry
+60 silly mapToRegistry registry https://registry.npmjs.org/
+61 silly mapToRegistry uri https://registry.npmjs.org/commander
+62 silly fetchNamedPackageData mkdirp
+63 silly mapToRegistry name mkdirp
+64 silly mapToRegistry using default registry
+65 silly mapToRegistry registry https://registry.npmjs.org/
+66 silly mapToRegistry uri https://registry.npmjs.org/mkdirp
+67 silly fetchNamedPackageData sorted-object
+68 silly mapToRegistry name sorted-object
+69 silly mapToRegistry using default registry
+70 silly mapToRegistry registry https://registry.npmjs.org/
+71 silly mapToRegistry uri https://registry.npmjs.org/sorted-object
+72 verbose request uri https://registry.npmjs.org/commander
+73 verbose request no auth needed
+74 info attempt registry request try #1 at 4:31:51 PM
+75 verbose etag W/"5866a44d-fdc1"
+76 verbose lastModified Fri, 30 Dec 2016 18:15:41 GMT
+77 http request GET https://registry.npmjs.org/commander
+78 verbose request uri https://registry.npmjs.org/mkdirp
+79 verbose request no auth needed
+80 info attempt registry request try #1 at 4:31:51 PM
+81 verbose etag W/"5865d59c-60cd"
+82 verbose lastModified Fri, 30 Dec 2016 03:33:48 GMT
+83 http request GET https://registry.npmjs.org/mkdirp
+84 verbose request uri https://registry.npmjs.org/sorted-object
+85 verbose request no auth needed
+86 info attempt registry request try #1 at 4:31:51 PM
+87 verbose etag W/"57d499b1-1545"
+88 verbose lastModified Sat, 10 Sep 2016 23:39:29 GMT
+89 http request GET https://registry.npmjs.org/sorted-object
+90 http 304 https://registry.npmjs.org/sorted-object
+91 verbose headers { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+91 verbose headers   via: '1.1 varnish',
+91 verbose headers   'cache-control': 'max-age=300',
+91 verbose headers   etag: 'W/"57d499b1-1545"',
+91 verbose headers   age: '0',
+91 verbose headers   connection: 'keep-alive',
+91 verbose headers   'x-served-by': 'cache-iad2143-IAD',
+91 verbose headers   'x-cache': 'HIT',
+91 verbose headers   'x-cache-hits': '1',
+91 verbose headers   'x-timer': 'S1483133511.637122,VS0,VE4',
+91 verbose headers   vary: 'Accept-Encoding' }
+92 silly get cb [ 304,
+92 silly get   { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+92 silly get     via: '1.1 varnish',
+92 silly get     'cache-control': 'max-age=300',
+92 silly get     etag: 'W/"57d499b1-1545"',
+92 silly get     age: '0',
+92 silly get     connection: 'keep-alive',
+92 silly get     'x-served-by': 'cache-iad2143-IAD',
+92 silly get     'x-cache': 'HIT',
+92 silly get     'x-cache-hits': '1',
+92 silly get     'x-timer': 'S1483133511.637122,VS0,VE4',
+92 silly get     vary: 'Accept-Encoding' } ]
+93 verbose etag https://registry.npmjs.org/sorted-object from cache
+94 verbose get saving sorted-object to /home/zhardy/.npm/registry.npmjs.org/sorted-object/.cache.json
+95 silly resolveWithNewModule sorted-object@2.0.0 checking installable status
+96 silly cache add args [ 'sorted-object@2.0.0', null ]
+97 verbose cache add spec sorted-object@2.0.0
+98 silly cache add parsed spec Result {
+98 silly cache add   raw: 'sorted-object@2.0.0',
+98 silly cache add   scope: null,
+98 silly cache add   name: 'sorted-object',
+98 silly cache add   rawSpec: '2.0.0',
+98 silly cache add   spec: '2.0.0',
+98 silly cache add   type: 'version' }
+99 silly addNamed sorted-object@2.0.0
+100 verbose addNamed "2.0.0" is a plain semver version for sorted-object
+101 silly mapToRegistry name sorted-object
+102 silly mapToRegistry using default registry
+103 silly mapToRegistry registry https://registry.npmjs.org/
+104 silly mapToRegistry uri https://registry.npmjs.org/sorted-object
+105 verbose addNameVersion registry:https://registry.npmjs.org/sorted-object not in flight; fetching
+106 verbose get https://registry.npmjs.org/sorted-object not expired, no request
+107 silly mapToRegistry name sorted-object
+108 silly mapToRegistry using default registry
+109 silly mapToRegistry registry https://registry.npmjs.org/
+110 silly mapToRegistry uri https://registry.npmjs.org/sorted-object
+111 verbose addRemoteTarball https://registry.npmjs.org/sorted-object/-/sorted-object-2.0.0.tgz not in flight; adding
+112 verbose addRemoteTarball [ 'https://registry.npmjs.org/sorted-object/-/sorted-object-2.0.0.tgz',
+112 verbose addRemoteTarball   '1cfea981609047d8043807a490a9d99b317faf7f' ]
+113 info retry fetch attempt 1 at 4:31:51 PM
+114 info attempt registry request try #1 at 4:31:51 PM
+115 http fetch GET https://registry.npmjs.org/sorted-object/-/sorted-object-2.0.0.tgz
+116 http 304 https://registry.npmjs.org/mkdirp
+117 verbose headers { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+117 verbose headers   via: '1.1 varnish',
+117 verbose headers   'cache-control': 'max-age=300',
+117 verbose headers   etag: 'W/"5865d59c-60cd"',
+117 verbose headers   age: '81',
+117 verbose headers   connection: 'keep-alive',
+117 verbose headers   'x-served-by': 'cache-iad2629-IAD',
+117 verbose headers   'x-cache': 'HIT',
+117 verbose headers   'x-cache-hits': '17',
+117 verbose headers   'x-timer': 'S1483133511.659770,VS0,VE0',
+117 verbose headers   vary: 'Accept-Encoding' }
+118 silly get cb [ 304,
+118 silly get   { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+118 silly get     via: '1.1 varnish',
+118 silly get     'cache-control': 'max-age=300',
+118 silly get     etag: 'W/"5865d59c-60cd"',
+118 silly get     age: '81',
+118 silly get     connection: 'keep-alive',
+118 silly get     'x-served-by': 'cache-iad2629-IAD',
+118 silly get     'x-cache': 'HIT',
+118 silly get     'x-cache-hits': '17',
+118 silly get     'x-timer': 'S1483133511.659770,VS0,VE0',
+118 silly get     vary: 'Accept-Encoding' } ]
+119 verbose etag https://registry.npmjs.org/mkdirp from cache
+120 verbose get saving mkdirp to /home/zhardy/.npm/registry.npmjs.org/mkdirp/.cache.json
+121 http 304 https://registry.npmjs.org/commander
+122 verbose headers { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+122 verbose headers   via: '1.1 varnish',
+122 verbose headers   'cache-control': 'max-age=300',
+122 verbose headers   etag: 'W/"5866a44d-fdc1"',
+122 verbose headers   age: '50',
+122 verbose headers   connection: 'keep-alive',
+122 verbose headers   'x-served-by': 'cache-iad2624-IAD',
+122 verbose headers   'x-cache': 'HIT',
+122 verbose headers   'x-cache-hits': '2',
+122 verbose headers   'x-timer': 'S1483133511.655949,VS0,VE0',
+122 verbose headers   vary: 'Accept-Encoding' }
+123 silly get cb [ 304,
+123 silly get   { date: 'Fri, 30 Dec 2016 21:31:51 GMT',
+123 silly get     via: '1.1 varnish',
+123 silly get     'cache-control': 'max-age=300',
+123 silly get     etag: 'W/"5866a44d-fdc1"',
+123 silly get     age: '50',
+123 silly get     connection: 'keep-alive',
+123 silly get     'x-served-by': 'cache-iad2624-IAD',
+123 silly get     'x-cache': 'HIT',
+123 silly get     'x-cache-hits': '2',
+123 silly get     'x-timer': 'S1483133511.655949,VS0,VE0',
+123 silly get     vary: 'Accept-Encoding' } ]
+124 verbose etag https://registry.npmjs.org/commander from cache
+125 verbose get saving commander to /home/zhardy/.npm/registry.npmjs.org/commander/.cache.json
+126 silly resolveWithNewModule mkdirp@0.5.1 checking installable status
+127 silly cache add args [ 'mkdirp@0.5.1', null ]
+128 verbose cache add spec mkdirp@0.5.1
+129 silly cache add parsed spec Result {
+129 silly cache add   raw: 'mkdirp@0.5.1',
+129 silly cache add   scope: null,
+129 silly cache add   name: 'mkdirp',
+129 silly cache add   rawSpec: '0.5.1',
+129 silly cache add   spec: '0.5.1',
+129 silly cache add   type: 'version' }
+130 silly addNamed mkdirp@0.5.1
+131 verbose addNamed "0.5.1" is a plain semver version for mkdirp
+132 silly mapToRegistry name mkdirp
+133 silly mapToRegistry using default registry
+134 silly mapToRegistry registry https://registry.npmjs.org/
+135 silly mapToRegistry uri https://registry.npmjs.org/mkdirp
+136 verbose addNameVersion registry:https://registry.npmjs.org/mkdirp not in flight; fetching
+137 silly resolveWithNewModule commander@2.9.0 checking installable status
+138 silly cache add args [ 'commander@2.9.0', null ]
+139 verbose cache add spec commander@2.9.0
+140 silly cache add parsed spec Result {
+140 silly cache add   raw: 'commander@2.9.0',
+140 silly cache add   scope: null,
+140 silly cache add   name: 'commander',
+140 silly cache add   rawSpec: '2.9.0',
+140 silly cache add   spec: '2.9.0',
+140 silly cache add   type: 'version' }
+141 silly addNamed commander@2.9.0
+142 verbose addNamed "2.9.0" is a plain semver version for commander
+143 silly mapToRegistry name commander
+144 silly mapToRegistry using default registry
+145 silly mapToRegistry registry https://registry.npmjs.org/
+146 silly mapToRegistry uri https://registry.npmjs.org/commander
+147 verbose addNameVersion registry:https://registry.npmjs.org/commander not in flight; fetching
+148 verbose get https://registry.npmjs.org/mkdirp not expired, no request
+149 verbose get https://registry.npmjs.org/commander not expired, no request
+150 silly cache afterAdd commander@2.9.0
+151 verbose afterAdd /home/zhardy/.npm/commander/2.9.0/package/package.json not in flight; writing
+152 silly cache afterAdd mkdirp@0.5.1
+153 verbose afterAdd /home/zhardy/.npm/mkdirp/0.5.1/package/package.json not in flight; writing
+154 verbose afterAdd /home/zhardy/.npm/commander/2.9.0/package/package.json written
+155 verbose afterAdd /home/zhardy/.npm/mkdirp/0.5.1/package/package.json written
+156 http fetch 200 https://registry.npmjs.org/sorted-object/-/sorted-object-2.0.0.tgz
+157 silly fetchAndShaCheck shasum 1cfea981609047d8043807a490a9d99b317faf7f
+158 verbose addTmpTarball /tmp/npm-5515-9ce9ae2e/registry.npmjs.org/sorted-object/-/sorted-object-2.0.0.tgz not in flight; adding
+159 verbose addTmpTarball already have metadata; skipping unpack for sorted-object@2.0.0
+160 silly rollbackFailedOptional Starting
+161 silly rollbackFailedOptional Finishing
+162 silly runTopLevelLifecycles Starting
+163 silly runTopLevelLifecycles Finishing
+164 silly install printInstalled
+165 verbose stack Error: EACCES: permission denied, mkdir '/home/zhardy/.npm/sorted-object/2.0.0'
+165 verbose stack     at Error (native)
+166 verbose cwd /home/zhardy/programming/rest_api_gen
+167 error Linux 4.4.0-47-generic
+168 error argv "/usr/bin/nodejs" "/usr/bin/npm" "install" "express-generator"
+169 error node v4.2.6
+170 error npm  v3.5.2
+171 error path /home/zhardy/.npm/sorted-object/2.0.0
+172 error code EACCES
+173 error errno -13
+174 error syscall mkdir
+175 error Error: EACCES: permission denied, mkdir '/home/zhardy/.npm/sorted-object/2.0.0'
+175 error     at Error (native)
+175 error  { [Error: EACCES: permission denied, mkdir '/home/zhardy/.npm/sorted-object/2.0.0']
+175 error   errno: -13,
+175 error   code: 'EACCES',
+175 error   syscall: 'mkdir',
+175 error   path: '/home/zhardy/.npm/sorted-object/2.0.0',
+175 error   parent: 'express-generator' }
+176 error Please try running this command again as root/Administrator.
+177 verbose exit [ -13, true ]
