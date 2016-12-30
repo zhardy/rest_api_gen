@@ -106,9 +106,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 
 def main():
 	# if len(sys.argv) < 4:
-	# 	filepath = raw_input("Please provide a filepath for the JSON:\n")
-	# 	shell_path = raw_input("Please provide a filepath for the shell script:\n")
-	# 	directory = raw_input("Please provide a filepath to create your new REST API:\n")
+	# 	filepath = raw_input("Please provide an absolute filepath for the JSON:\n")
+	# 	shell_path = raw_input("Please provide an absolute filepath for the shell script:\n")
+	# 	directory = raw_input("Please provide an absolute filepath to create your new REST API:\n")
 	# else:
 	# 	filepath = sys.argv[1]
 	# 	shell_path = sys.argv[2]
@@ -121,7 +121,11 @@ def main():
 
 	if "~" in filepath:
 		filepath = os.path.expanduser(filepath)
+
+	if "~" in shell_path:
 		shell_path = os.path.expanduser(shell_path)
+
+	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
 
