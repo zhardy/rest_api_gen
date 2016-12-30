@@ -39,10 +39,6 @@ var router = express.Router();"""
 
 def sql_schema(filepath):
 
-
-	#Constants
-
-
 	#Get JSON
 	with open(filepath) as data_file:
 		data = json.load(data_file)
@@ -100,7 +96,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 	for table in data:
 		if "type" not in table:
 			js_route = open(location_for_api + "/" + table["name"], 'w')
-			js_route.write(BEGIN_ROUTES +LINEBR + LINEBR)
+			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 			js_route.write(ROUTER_GET + table["name"] + COMMA + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write()
 
