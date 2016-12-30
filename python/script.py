@@ -13,6 +13,8 @@ COMMA = ","
 LINEBR = "\n";
 FW_SLASH = "/"
 BW_SLASH = "\\"
+TAB = "\t"
+EQUAL = " = "
 
 BEGIN_SCHEMA = """DROP SCHEMA public CASCADE;\n
 CREATE SCHEMA public;\n
@@ -31,6 +33,8 @@ ROUTER_GET = "router.get('/"
 ROUTER_POST = "router.post('/"
 ROUTER_PUT = "router.put('/"
 ROUTER_PATCH = "router.patch('/"
+VAR = "var "
+REQ_BODY = "req.body."
 
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
 RES_JSON = "res.json"
@@ -87,8 +91,6 @@ def sql_schema(filepath):
 
 
 def rest_api_gen(filepath, shell_path, location_for_api):
-
-
 	subprocess.call([shell_path, location_for_api])
 	print filepath
 	with open(filepath) as data_file:
@@ -99,7 +101,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route = open(location_for_api + "/routes/" + table["name"] + ".js", 'w')
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 			js_route.write(ROUTER_GET + table["name"] + CLOSED_QUOTE + COMMA + ROUTER_FUNCTION_BEGIN + LINEBR)
-			#js_route.write()
+			for value in table["values"]:
+				js_route.write(TAB + VAR + SPACE + table["name"] + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR)
+			js_route.write(CLOSED_BRACKET + CLOSED_PARAN + SEMI)
 
 
 
