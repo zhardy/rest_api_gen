@@ -145,11 +145,11 @@ function SqlBuildModel() {
         new Table("Users", [ 
             new Value("UserID", 8, true, self.dataTypes),
             new Value("User", 11, false, self.dataTypes)
-            ]),
+            ], self.dataTypes),
         new Table("Passwords", [
             new Value("PasswordID", 8, true, self.dataTypes),
             new Value("Password", 11, false, self.dataTypes)
-            ])
+            ], self.dataTypes)
     ];
 
     // Editable data
