@@ -16,11 +16,11 @@
 
             <div class="architecture-container" data-bind="foreach: architecture">
                 <div class="row">
-                        <div class="col-xs-2">
+                        <div class="col-md-2">
                             <input data-bind="value: name" class="form-control"/>
                         </div>
 
-                        <div class="col-xs-1 col-xs-offset-9">
+                        <div class="col-md-1 col-md-offset-9">
                             <a href="#" title="Delete this table">
                                 <button class="glyphicon glyphicon-remove btn" data-bind="click: $root.removeTable"></button>
                             </a>
@@ -30,11 +30,11 @@
                 <div class="value-container" data-bind="foreach: values">
                 <br>
                     <div class="row">       
-						<div class="col-xs-1">
+						<div class="col-md-1">
 							<label>Ref?</label>
 							<input type="checkbox" data-bind="checked: foreignReference"/>
 						</div>
-                        <div class="col-xs-2">
+                        <div class="col-md-2">
                             <!-- ko if: !foreignReference() -->
                             <input data-bind="value: name"/>
                             <!-- /ko -->
@@ -48,7 +48,7 @@
 							<!--<select data-bind="options: $parent.architecture(), value:name, optionsText: 'name'" class="chosen-select">
 							</select> -->
                         </div>
-                        <div class="col-xs-3">
+                        <div class="col-md-3">
                             <!-- ko if:!foreignReference() -->
                             <select data-bind="options: dataTypes, value: type, optionsText: 'name'" class="form-control">
                                 
@@ -63,20 +63,20 @@
                             <!-- /ko -->
                         </div>
                         
-                        <div class="col-xs-2">
+                        <div class="col-md-2">
                             <input type="number" data-bind="visible: type().length, value:type().length" />
                         </div>
-                        <div class="col-xs-1">
+                        <div class="col-md-1">
                             <a href="#" title="Make primary key">
                                 <span data-bind= "click: $parent.togglePrimary, css: {'glyphicon-star' :isPrimary(), 'glyphicon-star-empty' :!isPrimary()}" class="glyphicon"></span>
                             </a>
                         </div>
-                        <div class="col-xs-1">
+                        <div class="col-md-1">
                             <a href="#" title="Delete this value">
                                 <button data-bind="click: $parent.removeValue" class="glyphicon glyphicon-remove btn"></button>
                             </a>
                         </div>
-<!--                         <div class="col-xs-1">
+<!--                         <div class="col-md-1">
                             <input type="checkbox" data-bind="checked:references">
                         </div> -->
                         <br>
@@ -84,7 +84,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-xs-1 col-xs-offset-11">
+                    <div class="col-md-1 col-md-offset-11">
                         <button class="glyphicon glyphicon-plus btn" data-bind="click: addValue"></span>
                     </div>
                 </div>
@@ -95,17 +95,17 @@
             <!-- ko if: allowCustom -->
             <div class="custom-value-container">
             	<div class="row">
-            		<div class="col-xs-4">
+            		<div class="col-md-4">
             			<label>Name of Custom Value:</label><br>
 	            		<input type="text" data-bind="value:$root.currentCustom().name"/>
             		</div>
-            		<div class="col-xs-4">
+            		<div class="col-md-4">
             			<br>
             			<textarea row="1" cols="30" data-bind="value:$root.currentCustom().valueText">
 
 	            		</textarea>
             		</div>
-            		<div class="col-xs-4">
+            		<div class="col-md-4">
             			<br>
             			<button class="btn" data-bind="click: $root.generateCustom">Generate Custom</button>
             		</div>
