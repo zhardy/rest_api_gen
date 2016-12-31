@@ -223,7 +223,6 @@ function SqlBuildModel() {
                     valObj.type = value.foreignType().type();
                     valObj.name = value.foreignType().name;
                 }
-                console.log(valObj.type);
                 valueArray.push(valObj);
             });
             var tableObj = {name: table.name, values: valueArray}
