@@ -66,7 +66,7 @@ function Value(name, value, isPrimary, dataTypes){
 // Overall viewmodel for this screen, along with initial state
 function SqlBuildModel() {
     var self = this;
-    self.dataTypes = ko.observableArray([
+    self.dataTypes = [
         {
             name: "smallint"
         },
@@ -132,7 +132,7 @@ function SqlBuildModel() {
         {
             name:"boolean"
         }
-    ]);
+    ];
 
     self.createUserPasswords = ko.observable(false);
     self.allowCustom = ko.observable(false);
@@ -141,16 +141,15 @@ function SqlBuildModel() {
     self.currentCustom = ko.observable(new CustomValue("Name", "Put some text here separated by commas for custom values"));
 
 
-
     self.userPasswordTemplates = [
         new Table("Users", [ 
             new Value("UserID", 8, true, self.dataTypes),
             new Value("User", 11, false, self.dataTypes)
-            ], self.dataTypes),
+            ]),
         new Table("Passwords", [
             new Value("PasswordID", 8, true, self.dataTypes),
             new Value("Password", 11, false, self.dataTypes)
-            ], self.dataTypes)
+            ])
     ];
 
     // Editable data
