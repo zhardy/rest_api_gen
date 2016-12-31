@@ -54,7 +54,7 @@ def sql_schema(filepath):
 	#For each table in the data dictionary
 	for table in data:
 		#If type exists as a property of this table and the type property equals custom
-		if "type" not in table and table["type"] == "Custom":
+		if "type" in table and table["type"] == "Custom":
 			#Write out a custom enumerator with each value belonging in this table
 			db_arch.write(CREATE_CUSTOM_BEGIN + table["name"] + AS_ENUM + OPEN_PARAN)
 			for value in table["values"]:
@@ -70,7 +70,7 @@ def sql_schema(filepath):
 
 			db_arch.write(CREATE_TABLE_BEGIN + table["name"] + OPEN_PARAN + LINEBR)
 			for value in table["values"]:
-				if "length" in value["type"] and value["type"]["length"] != 0:
+				if "length" in value["type"] and int(value["type"]["length"]) != 0:
 					db_arch.write(value["name"] + SPACE + value["type"]["name"] + OPEN_PARAN + str(value["type"]["length"]) + CLOSED_PARAN + COMMA + LINEBR)
 				else:
 					db_arch.write(value["name"] + SPACE + value["type"]["name"] + COMMA + LINEBR)
@@ -119,7 +119,7 @@ def main():
 	# 	directory = sys.argv[3]
 	# sql_schema(filepath)
 
-	filepath = "~/Downloads/data.json"
+	filepath = "~/Downloads/data (1).json"
 	shell_path = "~/programming/rest_api_gen/node/node.sh"
 	directory = "~/programming/rest_api_gen/test"
 
@@ -132,8 +132,8 @@ def main():
 	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
-
-	rest_api_gen(filepath, shell_path, directory)
+	sql_schema(filepath)
+	#rest_api_gen(filepath, shell_path, directory)
 
 main()
 
