@@ -38,6 +38,7 @@ function CustomValue(name, values){
 function Value(name, value, isPrimary, dataTypes){
     var self = this;
     self.name = name;
+    self.lengthVal = undefined;
     self.dataTypes = dataTypes;
     self.type = value != undefined ? ko.observable(self.dataTypes()[value]) : ko.observable(self.dataTypes()[1]);
     self.isPrimary = ko.observable(isPrimary);
@@ -66,7 +67,7 @@ function Value(name, value, isPrimary, dataTypes){
 // Overall viewmodel for this screen, along with initial state
 function SqlBuildModel() {
     var self = this;
-    self.dataTypes = [
+    self.dataTypes = ko.observableArray([
         {
             name: "smallint"
         },
@@ -102,7 +103,7 @@ function SqlBuildModel() {
         },
         {
             name:"varchar",
-            length:80
+            length: true
         },
         {
             name:"char",
@@ -132,7 +133,7 @@ function SqlBuildModel() {
         {
             name:"boolean"
         }
-    ];
+    ]);
 
     self.createUserPasswords = ko.observable(false);
     self.allowCustom = ko.observable(false);
@@ -210,7 +211,9 @@ function SqlBuildModel() {
             var valueArray = [];
             table.values().forEach(function(value){
                 var valObj = {name: value.name};
-                valObj.type = value.type();
+                valObj.type = {};
+                valObj.type.name = value.type().name;
+                valObj.type.length = value.lengthVal;
 
                 valObj.isPrimary = value.isPrimary(); 
                 valObj.isReference = value.foreignReference();
@@ -220,6 +223,7 @@ function SqlBuildModel() {
                     valObj.type = value.foreignType().type();
                     valObj.name = value.foreignType().name;
                 }
+                console.log(valObj.type);
                 valueArray.push(valObj);
             });
             var tableObj = {name: table.name, values: valueArray}

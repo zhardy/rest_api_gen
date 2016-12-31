@@ -45,8 +45,6 @@
                             </select>
                             <!-- /ko -->
 
-							<!--<select data-bind="options: $parent.architecture(), value:name, optionsText: 'name'" class="chosen-select">
-							</select> -->
                         </div>
                         <div class="col-md-3">
                             <!-- ko if:!foreignReference() -->
@@ -64,7 +62,7 @@
                         </div>
                         
                         <div class="col-md-2">
-                            <input type="number" data-bind="visible: type().length, value:type().length" />
+                            <input type="number" data-bind="visible: type().length, value:lengthVal" />
                         </div>
                         <div class="col-md-1">
                             <a href="#" title="Make primary key">
