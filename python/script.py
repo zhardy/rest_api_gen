@@ -35,6 +35,7 @@ ROUTER_PUT = "router.put('/"
 ROUTER_PATCH = "router.patch('/"
 VAR = "var "
 REQ_BODY = "req.body."
+DB_GET = "Get"
 
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
 RES_JSON = "res.json"
@@ -92,7 +93,6 @@ def sql_schema(filepath):
 
 def rest_api_gen(filepath, shell_path, location_for_api):
 	subprocess.call([shell_path, location_for_api])
-	print filepath
 	with open(filepath) as data_file:
 		data = json.load(data_file)
 	
@@ -101,8 +101,11 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route = open(location_for_api + "/routes/" + table["name"] + ".js", 'w')
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 			js_route.write(ROUTER_GET + table["name"] + CLOSED_QUOTE + COMMA + ROUTER_FUNCTION_BEGIN + LINEBR)
+			value_array = []
 			for value in table["values"]:
-				js_route.write(TAB + VAR + SPACE + table["name"] + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR)
+				js_route.write(TAB + VAR + SPACE + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR)
+				value_array.append(value["name"])
+			js_route.write(TAB + VAR + SPACE + table["name"] + EQUAL + DB_GET + table["name"] + OPEN_PARAN + ', '.join(value_array) + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(CLOSED_BRACKET + CLOSED_PARAN + SEMI)
 
 
@@ -132,8 +135,8 @@ def main():
 	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
-	sql_schema(filepath)
-	#rest_api_gen(filepath, shell_path, directory)
+	#sql_schema(filepath)
+	rest_api_gen(filepath, shell_path, directory)
 
 main()
 
