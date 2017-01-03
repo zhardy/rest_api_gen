@@ -12,6 +12,7 @@ CLOSED_ARRAY = "]"
 SEMI = ";"
 SPACE = " "
 COMMA = ","
+COLON = ":"
 LINEBR = "\n";
 FW_SLASH = "/"
 BW_SLASH = "\\"
@@ -37,10 +38,13 @@ ROUTER_PUT = "router.put('/"
 ROUTER_PATCH = "router.patch('/"
 VAR = "var "
 REQ_BODY = "req.body."
+REQ_PARAM = "req.param."
 DB_GET = "Get"
 BEGIN_IF = "if("
+BY = "By"
 
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
+ROUTER_FUNCTION_END = "}); \n\n"
 RES_JSON = "res.json"
 RES_INFO = "info: "
 MODULE_EXPORTS = "module.exports = router;"
@@ -107,7 +111,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			if str.lower(table_name[len(table_name)-1]) == "s":
 				table_name = table_name[0:len(table_name)-1]
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
-			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			value_array = []
 
 			for value in table["values"]:
@@ -116,12 +120,20 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			for value in table["values"]:
 				js_route.write(TAB + BEGIN_IF + REQ_BODY + value["name"] + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 				js_route.write(TAB + TAB + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR)
-				js_route.write(TAB + CLOSED_BRACKET + LINEBR)
+				js_route.write(TAB + CLOSED_BRACKET + LINEBR + LINEBR)
 				value_array.append(value["name"])
 			
 			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
-			js_route.write(CLOSED_BRACKET + CLOSED_PARAN + SEMI)
+			js_route.write(ROUTER_FUNCTION_END)
+
+			id_value = str(table["values"][0]["name"])
+			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(TAB + VAR + SPACE + id_value + EQUAL + REQ_PARAM + id_value + SEMI + LINEBR)
+			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + BY + id_value + OPEN_PARAN + id_value + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END)
+
 
 
 
