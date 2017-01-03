@@ -113,26 +113,49 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			value_array = []
+			var_declaration = ""
+			if_statements_for_requests = ""
+
 
 			for value in table["values"]:
-				js_route.write(TAB + VAR + SPACE + value["name"] + SEMI + LINEBR)
-
-			for value in table["values"]:
-				js_route.write(TAB + BEGIN_IF + REQ_BODY + value["name"] + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
-				js_route.write(TAB + TAB + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR)
-				js_route.write(TAB + CLOSED_BRACKET + LINEBR + LINEBR)
+				var_declaration += TAB + VAR + SPACE + value["name"] + SEMI + LINEBR
+				if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value["name"] + CLOSED_PARAN + OPEN_BRACKET + LINEBR
+				if_statements_for_requests += TAB + TAB + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR
+				if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
 				value_array.append(value["name"])
+			js_route.write(var_declaration)
+			js_route.write(if_statements_for_requests)
+				
 			
 			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
 
-			id_value = str(table["values"][0]["name"])
+			id_value = str(table["values"][0]["name"]) 
+			#later, I should make this so that when I go through
+			# the values the first time, I find whichever one 
+			#contains ID and use that, rather than defaulting to [0]
 			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(TAB + VAR + SPACE + id_value + EQUAL + REQ_PARAM + id_value + SEMI + LINEBR)
 			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + BY + id_value + OPEN_PARAN + id_value + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(ROUTER_FUNCTION_END)
+			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			
+			for value in table["values"]:
+				if value["isReference"]:
+					foreign_reference = str(value["foreignTable"])
+					if str.lower(foreign_reference[len(foreign_reference)-1]) == "s":
+						foreign_reference = foreign_reference[0:len(foreign_reference)-1]
+					js_route.write(ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+					js_route.write(var_declaration)
+					js_route.write(if_statements_for_requests)
+					#not a successful deep copy. Need to figure out how to do a successful deep copy in python 
+					# second_value_array = value_array
+					# second_value_array.remove(value["name"])
+					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
+					js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+					js_route.write(ROUTER_FUNCTION_END)
+
 
 
 
