@@ -32,6 +32,7 @@ REF = " references "
 
 BEGIN_ROUTES = """var express = require('express');\n
 var router = express.Router();"""
+END_ROUTES = "module.exports = router;"
 ROUTER_GET = "router.get('/"
 ROUTER_POST = "router.post('/"
 ROUTER_PUT = "router.put('/"
@@ -155,6 +156,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(ROUTER_FUNCTION_END)
+		js_route.write(END_ROUTES)
 
 
 
