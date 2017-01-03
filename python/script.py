@@ -111,40 +111,35 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			table_name = str(table["name"])
 			if str.lower(table_name[len(table_name)-1]) == "s":
 				table_name = table_name[0:len(table_name)-1]
-			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
-			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			value_array = []
 			var_declaration = ""
 			if_statements_for_requests = ""
-			id_values = []
+			value_array = []
 
 
+			#get single entry in table based on various info based to the request
+			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
+			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			for value in table["values"]:
 				var_declaration += TAB + VAR + SPACE + value["name"] + SEMI + LINEBR
 				if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value["name"] + CLOSED_PARAN + OPEN_BRACKET + LINEBR
 				if_statements_for_requests += TAB + TAB + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR
 				if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
-				if str.lower(str(value["name"])).find("id") > -1:
-					id_values.append(value["name"])
+				if str.lower(str(value["name"])).find("id") > -1 and bool(value["isPrimary"]):
+					id_value = value["name"]
 				value_array.append(value["name"])
 			js_route.write(var_declaration)
 			js_route.write(if_statements_for_requests)
-				
-			
 			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
 
-			#id_value = str(table["values"][0]["name"]) 
-			#later, I should make this so that when I go through
-			# the values the first time, I find whichever one 
-			#contains ID and use that, rather than defaulting to [0]
-			for id_val in id_values:
-				js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_val + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-				js_route.write(TAB + VAR + SPACE + id_val + EQUAL + REQ_PARAM + id_val + SEMI + LINEBR)
-				js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + BY + id_val + OPEN_PARAN + id_val + CLOSED_PARAN + SEMI + LINEBR)
-				js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
-				js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			#Get single entry in table based on the primary ID 
+			# route developed in the following pattern /{tablename}/{id}	
+			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(TAB + VAR + SPACE + id_value + EQUAL + REQ_PARAM + id_value + SEMI + LINEBR)
+			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + BY + id_value + OPEN_PARAN + id_value + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 			
 			for value in table["values"]:
 				if value["isReference"]:
