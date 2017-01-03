@@ -116,6 +116,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			value_array = []
 			var_declaration = ""
 			if_statements_for_requests = ""
+			id_values = []
 
 
 			for value in table["values"]:
@@ -123,6 +124,8 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 				if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value["name"] + CLOSED_PARAN + OPEN_BRACKET + LINEBR
 				if_statements_for_requests += TAB + TAB + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR
 				if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
+				if str.lower(str(value["name"])).find("id") > -1:
+					id_values.append(value["name"])
 				value_array.append(value["name"])
 			js_route.write(var_declaration)
 			js_route.write(if_statements_for_requests)
@@ -132,15 +135,16 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
 
-			id_value = str(table["values"][0]["name"]) 
+			#id_value = str(table["values"][0]["name"]) 
 			#later, I should make this so that when I go through
 			# the values the first time, I find whichever one 
 			#contains ID and use that, rather than defaulting to [0]
-			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			js_route.write(TAB + VAR + SPACE + id_value + EQUAL + REQ_PARAM + id_value + SEMI + LINEBR)
-			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + BY + id_value + OPEN_PARAN + id_value + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			for id_val in id_values:
+				js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_val + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+				js_route.write(TAB + VAR + SPACE + id_val + EQUAL + REQ_PARAM + id_val + SEMI + LINEBR)
+				js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + BY + id_val + OPEN_PARAN + id_val + CLOSED_PARAN + SEMI + LINEBR)
+				js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+				js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 			
 			for value in table["values"]:
 				if value["isReference"]:
@@ -156,7 +160,8 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(ROUTER_FUNCTION_END)
-		js_route.write(END_ROUTES)
+			js_route.write(END_ROUTES)
+
 
 
 
