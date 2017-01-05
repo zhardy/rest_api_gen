@@ -1,4 +1,4 @@
-import sys, os, json, subprocess
+import sys, os, json, subprocess, copy
 
 
 OPEN_QUOTE = "'"
@@ -149,10 +149,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 					js_route.write(ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 					js_route.write(var_declaration)
 					js_route.write(if_statements_for_requests)
-					#not a successful deep copy. Need to figure out how to do a successful deep copy in python 
-					# second_value_array = value_array
-					# second_value_array.remove(value["name"])
-					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
+					second_value_array = copy.copy(value_array)
+					second_value_array.remove(value["name"])
+					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(second_value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(ROUTER_FUNCTION_END)
 			js_route.write(END_ROUTES)
