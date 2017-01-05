@@ -100,6 +100,18 @@ def sql_schema(filepath):
 			db_arch.write(CLOSED_PARAN + SEMI + LINEBR + LINEBR)
 
 
+def if_statements_for_requests_gen(array):
+	if_statements_for_requests = ""
+	for value in array:
+			if_statements_for_requests += TAB + VAR + SPACE + value + SEMI + LINEBR
+			if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value + CLOSED_PARAN + OPEN_BRACKET + LINEBR
+			if_statements_for_requests += TAB + TAB + value + EQUAL + REQ_BODY + value + SEMI + LINEBR
+			if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
+			
+	return if_statements_for_requests
+
+
+
 def rest_api_gen(filepath, shell_path, location_for_api):
 	#subprocess.call([shell_path, location_for_api])
 	with open(filepath) as data_file:
@@ -111,24 +123,15 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			table_name = str(table["name"])
 			if str.lower(table_name[len(table_name)-1]) == "s":
 				table_name = table_name[0:len(table_name)-1]
-			var_declaration = ""
-			if_statements_for_requests = ""
-			value_array = []
 
 
 			#get single entry in table based on various info based to the request
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			for value in table["values"]:
-				var_declaration += TAB + VAR + SPACE + value["name"] + SEMI + LINEBR
-				if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value["name"] + CLOSED_PARAN + OPEN_BRACKET + LINEBR
-				if_statements_for_requests += TAB + TAB + value["name"] + EQUAL + REQ_BODY + value["name"] + SEMI + LINEBR
-				if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
-				if str.lower(str(value["name"])).find("id") > -1 and bool(value["isPrimary"]):
-					id_value = value["name"]
-				value_array.append(value["name"])
-			js_route.write(var_declaration)
-			js_route.write(if_statements_for_requests)
+			value_array = [str(val["name"]).format(val) for val in table["values"]]
+			id_value = next((str(i["name"]) for i in table["values"] if 'id' in str(i["name"]).lower() and i["isPrimary"] == True), None)
+
+			js_route.write(if_statements_for_requests_gen(value_array))
 			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
@@ -147,10 +150,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 					if str.lower(foreign_reference[len(foreign_reference)-1]) == "s":
 						foreign_reference = foreign_reference[0:len(foreign_reference)-1]
 					js_route.write(ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-					js_route.write(var_declaration)
-					js_route.write(if_statements_for_requests)
 					second_value_array = copy.copy(value_array)
 					second_value_array.remove(value["name"])
+					js_route.write(if_statements_for_requests_gen(second_value_array))
 					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(second_value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
 					js_route.write(ROUTER_FUNCTION_END)
