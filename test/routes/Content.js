@@ -3,12 +3,12 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/Content', function(req, res) { 
-	var  ContentID;
+	var ContentID;
 	if(req.body.ContentID){
 		ContentID = req.body.ContentID;
 	}
 
-	var  Description;
+	var Description;
 	if(req.body.Description){
 		Description = req.body.Description;
 	}

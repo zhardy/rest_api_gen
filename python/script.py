@@ -50,6 +50,12 @@ RES_JSON = "res.json"
 RES_INFO = "info: "
 MODULE_EXPORTS = "module.exports = router;"
 
+def remove_s(string):
+	if str.lower(string[len(string)-1]) == "s":
+		string = string[0:len(string)-1]
+	return string
+
+
 
 def sql_schema(filepath):
 
@@ -103,13 +109,25 @@ def sql_schema(filepath):
 def if_statements_for_requests_gen(array):
 	if_statements_for_requests = ""
 	for value in array:
-			if_statements_for_requests += TAB + VAR + SPACE + value + SEMI + LINEBR
-			if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value + CLOSED_PARAN + OPEN_BRACKET + LINEBR
-			if_statements_for_requests += TAB + TAB + value + EQUAL + REQ_BODY + value + SEMI + LINEBR
-			if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
-			
+		value = value["name"]
+		if_statements_for_requests += TAB + VAR + value + SEMI + LINEBR
+		if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value + CLOSED_PARAN + OPEN_BRACKET + LINEBR
+		if_statements_for_requests += TAB + TAB + value + EQUAL + REQ_BODY + value + SEMI + LINEBR
+		if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
 	return if_statements_for_requests
 
+def foreign_reference_route_gen(value_array, table_name):
+	foreign_reference_array = [remove_s(str(value["foreignTable"])) for value in value_array if value["isReference"] == True]
+	foreign_reference_routes = ""
+	for foreign_reference in foreign_reference_array:
+		second_value_array = [val for val in value_array if val["name"] != foreign_reference]
+		foreign_reference_routes += ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR
+		foreign_reference_routes += if_statements_for_requests_gen(second_value_array)
+		foreign_reference_routes += TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY 
+		foreign_reference_routes += ', '.join([value["name"] for value in second_value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR
+		foreign_reference_routes += TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR
+		foreign_reference_routes += ROUTER_FUNCTION_END
+	return foreign_reference_routes
 
 
 def rest_api_gen(filepath, shell_path, location_for_api):
@@ -120,49 +138,37 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 	for table in data:
 		if "type" not in table:
 			js_route = open(location_for_api + "/routes/" + table["name"] + ".js", 'w')
-			table_name = str(table["name"])
-			if str.lower(table_name[len(table_name)-1]) == "s":
-				table_name = table_name[0:len(table_name)-1]
+			table_name = remove_s(str(table["name"]))
 
+			#list of values names
+			value_array = table["values"]
+			#get primary value
+			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), None)
 
-			#get single entry in table based on various info based to the request
+			#get single entry in table based on various info sent through the request
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			value_array = [str(val["name"]).format(val) for val in table["values"]]
-			id_value = next((str(i["name"]) for i in table["values"] if 'id' in str(i["name"]).lower() and i["isPrimary"] == True), None)
-
 			js_route.write(if_statements_for_requests_gen(value_array))
-			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
 
-			#Get single entry in table based on the primary ID 
-			# route developed in the following pattern /{tablename}/{id}	
-			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + id_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			js_route.write(TAB + VAR + SPACE + id_value + EQUAL + REQ_PARAM + id_value + SEMI + LINEBR)
-			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + BY + id_value + OPEN_PARAN + id_value + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			#write all routes to get an entry in a foreign table based on information about the table that is referencing it
+
+			#for example, if you had a User table that referenced a password table as a foreign reference and ran this code it would generate
+			# /User/Password and get the Password entry associated to the information based to the User table
+			js_route.write(foreign_reference_route_gen(value_array, table_name))
+
+			# route developed in the following pattern /{tablename}/#primaryValue
+			if primary_value != None:	
+				js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+				js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
+				js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + SEMI + LINEBR)
+				js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+				js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 			
-			for value in table["values"]:
-				if value["isReference"]:
-					foreign_reference = str(value["foreignTable"])
-					if str.lower(foreign_reference[len(foreign_reference)-1]) == "s":
-						foreign_reference = foreign_reference[0:len(foreign_reference)-1]
-					js_route.write(ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-					second_value_array = copy.copy(value_array)
-					second_value_array.remove(value["name"])
-					js_route.write(if_statements_for_requests_gen(second_value_array))
-					js_route.write(TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY + ', '.join(second_value_array) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
-					js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
-					js_route.write(ROUTER_FUNCTION_END)
 			js_route.write(END_ROUTES)
-
-
-
-
-
-
 
 def main():
 	# if len(sys.argv) < 4:
@@ -192,5 +198,4 @@ def main():
 	rest_api_gen(filepath, shell_path, directory)
 
 main()
-
 

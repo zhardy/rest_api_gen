@@ -3,12 +3,12 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/Password', function(req, res) { 
-	var  PasswordID;
+	var PasswordID;
 	if(req.body.PasswordID){
 		PasswordID = req.body.PasswordID;
 	}
 
-	var  Password;
+	var Password;
 	if(req.body.Password){
 		Password = req.body.Password;
 	}

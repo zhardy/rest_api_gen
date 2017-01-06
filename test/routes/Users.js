@@ -3,12 +3,12 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/User', function(req, res) { 
-	var  UserID;
+	var UserID;
 	if(req.body.UserID){
 		UserID = req.body.UserID;
 	}
 
-	var  Username;
+	var Username;
 	if(req.body.Username){
 		Username = req.body.Username;
 	}
