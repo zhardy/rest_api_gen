@@ -127,7 +127,7 @@ def foreign_reference_route_gen(value_array, table_name):
 	foreign_reference_array = [remove_s(str(value["foreignTable"])) for value in value_array if value["isReference"] == True]
 	foreign_reference_routes = ""
 	for foreign_reference in foreign_reference_array:
-		second_value_array = [val for val in value_array if val["name"] != foreign_reference]
+		second_value_array = [val for val in value_array if foreign_reference not in val["name"]]
 		foreign_reference_routes += ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR
 		foreign_reference_routes += if_statements_for_requests_gen(second_value_array)[0]
 		foreign_reference_routes += TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY 
@@ -138,7 +138,7 @@ def foreign_reference_route_gen(value_array, table_name):
 
 
 def rest_api_gen(filepath, shell_path, location_for_api):
-	#subprocess.call([shell_path, location_for_api])
+	subprocess.call([shell_path, location_for_api])
 	with open(filepath) as data_file:
 		data = json.load(data_file)
 	
