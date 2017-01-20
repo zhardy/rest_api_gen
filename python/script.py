@@ -41,8 +41,13 @@ VAR = "var "
 REQ_BODY = "req.body."
 REQ_PARAM = "req.param."
 DB_GET = "Get"
+DB_UPDATE = "Update"
+DB_ALL = "All"
+DB_CREATE = "Create"
 BEGIN_IF = "if("
 BY = "By"
+SUCCESS = "success"
+
 
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
 ROUTER_FUNCTION_END = "}); \n\n"
@@ -108,13 +113,15 @@ def sql_schema(filepath):
 
 def if_statements_for_requests_gen(array):
 	if_statements_for_requests = ""
+	only_declaration = ""
 	for value in array:
 		value = value["name"]
 		if_statements_for_requests += TAB + VAR + value + SEMI + LINEBR
 		if_statements_for_requests += TAB + BEGIN_IF + REQ_BODY + value + CLOSED_PARAN + OPEN_BRACKET + LINEBR
 		if_statements_for_requests += TAB + TAB + value + EQUAL + REQ_BODY + value + SEMI + LINEBR
 		if_statements_for_requests += TAB + CLOSED_BRACKET + LINEBR + LINEBR
-	return if_statements_for_requests
+		only_declaration += TAB + VAR + value + EQUAL + REQ_BODY + value + SEMI + LINEBR
+	return [if_statements_for_requests, only_declaration]
 
 def foreign_reference_route_gen(value_array, table_name):
 	foreign_reference_array = [remove_s(str(value["foreignTable"])) for value in value_array if value["isReference"] == True]
@@ -122,7 +129,7 @@ def foreign_reference_route_gen(value_array, table_name):
 	for foreign_reference in foreign_reference_array:
 		second_value_array = [val for val in value_array if val["name"] != foreign_reference]
 		foreign_reference_routes += ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR
-		foreign_reference_routes += if_statements_for_requests_gen(second_value_array)
+		foreign_reference_routes += if_statements_for_requests_gen(second_value_array)[0]
 		foreign_reference_routes += TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY 
 		foreign_reference_routes += ', '.join([value["name"] for value in second_value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR
 		foreign_reference_routes += TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR
@@ -138,20 +145,40 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 	for table in data:
 		if "type" not in table:
 			js_route = open(location_for_api + "/routes/" + table["name"] + ".js", 'w')
-			table_name = remove_s(str(table["name"]))
+			table_name = str(table["name"])
 
 			#list of values names
 			value_array = table["values"]
 			#get primary value
-			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), None)
+			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), str(value_array[0]["name"]))
 
-			#get single entry in table based on various info sent through the request
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
+
+			#everything in a table
+
 			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			js_route.write(if_statements_for_requests_gen(value_array))
+			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + DB_ALL + table_name + OPEN_PARAN + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END)
+
+
+			table_name = remove_s(table_name)
+			#get single entry in table based on various info sent through the request
+			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			if_statements_for_requests = if_statements_for_requests_gen(value_array)
+			only_declaration = if_statements_for_requests[1]
+			if_statements_for_requests = if_statements_for_requests[0]
+			js_route.write(if_statements_for_requests)
 			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY)
 			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END)
+
+			js_route.write(ROUTER_POST + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(only_declaration)
+			js_route.write(TAB + VAR + primary_value + EQUAL + DB_CREATE + table_name + OPEN_PARAN + OPEN_ARRAY)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + primary_value + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
 
 			#write all routes to get an entry in a foreign table based on information about the table that is referencing it
@@ -161,12 +188,33 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(foreign_reference_route_gen(value_array, table_name))
 
 			# route developed in the following pattern /{tablename}/#primaryValue
-			if primary_value != None:	
-				js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-				js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
-				js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + SEMI + LINEBR)
-				js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
-				js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(TAB + VAR + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
+			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + table_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			# beginning work on put and patch
+
+			#All values except primary
+			all_except_primary = [value for value in value_array if value["isPrimary"] == False]
+			if_except_primary = if_statements_for_requests_gen(all_except_primary)[0]
+
+			js_route.write(ROUTER_PUT + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
+			js_route.write(if_except_primary)
+			js_route.write(TAB + VAR + SUCCESS + EQUAL + DB_UPDATE + table_name + OPEN_PARAN + OPEN_ARRAY)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in all_except_primary]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+
+
+			js_route.write(ROUTER_PATCH + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
+			js_route.write(only_declaration)
+			js_route.write(TAB + VAR + SUCCESS + EQUAL + DB_UPDATE + table_name + OPEN_PARAN + OPEN_ARRAY)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in all_except_primary]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 			
 			js_route.write(END_ROUTES)
 
@@ -194,7 +242,7 @@ def main():
 	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
-	#sql_schema(filepath)
+	sql_schema(filepath)
 	rest_api_gen(filepath, shell_path, directory)
 
 main()
