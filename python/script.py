@@ -48,6 +48,13 @@ BEGIN_IF = "if("
 BY = "By"
 SUCCESS = "success"
 
+DB_ACCESS_BEGIN = """var pg = require('pg');\n
+var squel = require('squel').useFlavour('postgres');\n
+var query = require('pg-query');\n
+var pg = require('pg');\n
+var when = require('when');\n
+"""
+
 
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
 ROUTER_FUNCTION_END = "}); \n\n"
@@ -218,6 +225,20 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			
 			js_route.write(END_ROUTES)
 
+def sql_access(filepath, location_for_api):
+	#need try catch here.
+	lib_directory = location_for_api + "/lib/"
+	if(not os.path.exists(lib_directory)):
+		os.mkdir(lib_directory)
+	with open(location_for_api + "/node_modules/pg-query/index.js") as data_file:
+		line = data_file.read()
+	line = line.split('q = text.toQuery ? text.toQuery() : text;')
+	line.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
+	pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
+	for modified_line in line:
+		pg_query.write(modified_line)
+
+
 def main():
 	# if len(sys.argv) < 4:
 	# 	filepath = raw_input("Please provide an absolute filepath for the JSON:\n")
@@ -244,6 +265,6 @@ def main():
 
 	sql_schema(filepath)
 	rest_api_gen(filepath, shell_path, directory)
+	sql_access(filepath, directory)
 
 main()
-
