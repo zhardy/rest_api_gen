@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, os, json, subprocess, copy
 
 
@@ -55,12 +57,13 @@ var pg = require('pg');\n
 var when = require('when');\n
 """
 
-
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
 ROUTER_FUNCTION_END = "}); \n\n"
 RES_JSON = "res.json"
 RES_INFO = "info: "
 MODULE_EXPORTS = "module.exports = router;"
+
+splitter_for_appjs = "var users = require('./routes/users');\n"
 
 def remove_s(string):
 	if str.lower(string[len(string)-1]) == "s":
@@ -135,7 +138,7 @@ def foreign_reference_route_gen(value_array, table_name):
 	foreign_reference_routes = ""
 	for foreign_reference in foreign_reference_array:
 		second_value_array = [val for val in value_array if foreign_reference not in val["name"]]
-		foreign_reference_routes += ROUTER_GET + table_name + FW_SLASH + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR
+		foreign_reference_routes += ROUTER_GET + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR
 		foreign_reference_routes += if_statements_for_requests_gen(second_value_array)[0]
 		foreign_reference_routes += TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY 
 		foreign_reference_routes += ', '.join([value["name"] for value in second_value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR
@@ -148,10 +151,12 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 	subprocess.call([shell_path, location_for_api])
 	with open(filepath) as data_file:
 		data = json.load(data_file)
-	
+	list_of_routes = []
 	for table in data:
 		if "type" not in table:
-			js_route = open(location_for_api + "/routes/" + table["name"] + ".js", 'w')
+			location_for_js_route = location_for_api + "/routes/" + table["name"] 
+			list_of_routes.append(location_for_js_route )
+			js_route = open(location_for_js_route + ".js", 'w')
 			table_name = str(table["name"])
 
 			#list of values names
@@ -163,7 +168,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 
 			#everything in a table
 
-			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_GET + DB_ALL + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + DB_ALL + table_name + OPEN_PARAN + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
@@ -171,7 +176,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 
 			table_name = remove_s(table_name)
 			#get single entry in table based on various info sent through the request
-			js_route.write(ROUTER_GET + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_GET + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			if_statements_for_requests = if_statements_for_requests_gen(value_array)
 			only_declaration = if_statements_for_requests[1]
 			if_statements_for_requests = if_statements_for_requests[0]
@@ -181,7 +186,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
 			js_route.write(ROUTER_FUNCTION_END)
 
-			js_route.write(ROUTER_POST + table_name + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_POST  + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(only_declaration)
 			js_route.write(TAB + VAR + primary_value + EQUAL + DB_CREATE + table_name + OPEN_PARAN + OPEN_ARRAY)
 			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
@@ -195,7 +200,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(foreign_reference_route_gen(value_array, table_name))
 
 			# route developed in the following pattern /{tablename}/#primaryValue
-			js_route.write(ROUTER_GET + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_GET +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(TAB + VAR + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
 			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + table_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + SEMI + LINEBR)
 			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
@@ -206,7 +211,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			all_except_primary = [value for value in value_array if value["isPrimary"] == False]
 			if_except_primary = if_statements_for_requests_gen(all_except_primary)[0]
 
-			js_route.write(ROUTER_PUT + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_PUT + COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
 			js_route.write(if_except_primary)
 			js_route.write(TAB + VAR + SUCCESS + EQUAL + DB_UPDATE + table_name + OPEN_PARAN + OPEN_ARRAY)
@@ -215,7 +220,7 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
 
-			js_route.write(ROUTER_PATCH + table_name + FW_SLASH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
+			js_route.write(ROUTER_PATCH +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
 			js_route.write(only_declaration)
 			js_route.write(TAB + VAR + SUCCESS + EQUAL + DB_UPDATE + table_name + OPEN_PARAN + OPEN_ARRAY)
@@ -225,8 +230,35 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			
 			js_route.write(END_ROUTES)
 
+	#read in app.js to include routes in routes
+	with open(location_for_api + "/app.js") as app_file:
+		data = app_file.read()
+	data = data.split(splitter_for_appjs)
+	app_file = open(location_for_api + "/app.js", 'w')
+	#write beginning of file back
+	app_file.write(data[0])
+	for route in list_of_routes:
+		#remove directory for api so we can refer to it locally (easier for deployment)
+		route = route.split(location_for_api)[1]
+		#create a variable name for this route to be known as
+		name = route.split("/routes/")[1]
+		#set variable name (described above) equal to route module location
+		app_file.write("var " + name + " = require('." + route + "');\n")
+	#The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
+	data[1] = data[1].split("app.use('/users', users);")
+	#write the first part of the last section out
+	app_file.write(data[1][0])
+	for route in list_of_routes:
+		#again, get the last name
+		name = route.split("/routes/")[1]
+		#set the web application to use the name
+		app_file.write("app.use('/"+ name + "', " + name + ");\n")
+	#write the final part out
+	app_file.write(data[1][1])
+
+
 def sql_access(filepath, location_for_api):
-	#need try catch here.
+	
 	lib_directory = location_for_api + "/lib/"
 	if(not os.path.exists(lib_directory)):
 		os.mkdir(lib_directory)
@@ -265,6 +297,6 @@ def main():
 
 	sql_schema(filepath)
 	rest_api_gen(filepath, shell_path, directory)
-	sql_access(filepath, directory)
+	#sql_access(filepath, directory)
 
 main()
