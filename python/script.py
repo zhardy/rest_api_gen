@@ -262,13 +262,15 @@ def sql_access(filepath, location_for_api):
 	lib_directory = location_for_api + "/lib/"
 	if(not os.path.exists(lib_directory)):
 		os.mkdir(lib_directory)
-	with open(location_for_api + "/node_modules/pg-query/index.js") as data_file:
-		line = data_file.read()
-	line = line.split('q = text.toQuery ? text.toQuery() : text;')
-	line.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
+	with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
+		data = pg_query_lib.read()
+	data = data.split('q = text.toQuery ? text.toQuery() : text;')
+	data.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
 	pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
-	for modified_line in line:
+	for modified_line in data:
 		pg_query.write(modified_line)
+
+
 
 
 def main():
