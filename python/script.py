@@ -5,6 +5,7 @@ import sys, os, json, subprocess, copy
 
 OPEN_QUOTE = "'"
 CLOSED_QUOTE = "'"
+DOUBLE_QUOTE = '"'
 OPEN_PARAN = "("
 CLOSED_PARAN = ")"
 OPEN_BRACKET = "{"
@@ -49,19 +50,33 @@ DB_CREATE = "Create"
 BEGIN_IF = "if("
 BY = "By"
 SUCCESS = "success"
-
-DB_ACCESS_BEGIN = """var pg = require('pg');\n
-var squel = require('squel').useFlavour('postgres');\n
-var query = require('pg-query');\n
-var pg = require('pg');\n
-var when = require('when');\n
-"""
-
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
 ROUTER_FUNCTION_END = "}); \n\n"
 RES_JSON = "res.json"
 RES_INFO = "info: "
 MODULE_EXPORTS = "module.exports = router;"
+
+DB_ACCESS_BEGIN = """var pg = require('pg');
+var squel = require('squel').useFlavour('postgres');
+var query = require('pg-query');
+var when = require('when');\n
+query.connectionParameters = "postgres://"\n
+"""
+
+DB_INTERNAL_CREATE = "create"
+DB_ACCESS_FUNCTION_BEGIN = "function"
+DB_ANONYMOUS_CALLBACK  = "function(data){\n\t\t\treturn data[0]."
+
+
+DB_ACCESS_INSERT = "Insert"
+DB_ACCESS_SQUEL_INSERT = "squel.insert()"
+DB_ACCESS_INTO = ".into"
+DB_ACCESS_SET = ".set"
+DB_ACCESS_RETURNING = ".returning"
+DB_ACCESS_WHEN = "when.all(["
+DB_ACCESS_QUERY = "query"
+DB_ACCESS_SPREAD = "]).spread("
+
 
 splitter_for_appjs = "var users = require('./routes/users');\n"
 
@@ -259,9 +274,8 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 
 def sql_access(filepath, location_for_api):
 	
-	lib_directory = location_for_api + "/lib/"
-	if(not os.path.exists(lib_directory)):
-		os.mkdir(lib_directory)
+	#modifying pg-query npm library for use with this project
+
 	with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
 		data = pg_query_lib.read()
 	data = data.split('q = text.toQuery ? text.toQuery() : text;')
@@ -269,6 +283,41 @@ def sql_access(filepath, location_for_api):
 	pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
 	for modified_line in data:
 		pg_query.write(modified_line)
+
+	with open(filepath) as data_file:
+		data = json.load(data_file)
+
+	lib_directory = location_for_api + "/lib/"
+	if(not os.path.exists(lib_directory)):
+		os.mkdir(lib_directory)
+	
+
+	db_access = open(lib_directory + "dbAccess.js", 'w')
+	db_access.write(DB_ACCESS_BEGIN)
+
+	for table in data:
+		if "type" not in table:
+			table_name = remove_s(str(table["name"]))
+			value_array = table["values"]
+			parameters = [str(val["name"]).format(val) for val in value_array if val["isPrimary"] == False]
+			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), str(value_array[0]["name"]))
+			function_name = table_name.lower() + DB_ACCESS_INSERT
+
+			db_access.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_INTERNAL_CREATE + table_name + OPEN_PARAN + (', ').join(parameters) + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+			db_access.write(TAB + VAR + function_name + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_INTO + OPEN_PARAN + DOUBLE_QUOTE + table["name"] + DOUBLE_QUOTE + CLOSED_PARAN + LINEBR)
+			for param in parameters:
+				db_access.write(TAB + TAB + DB_ACCESS_SET + OPEN_PARAN + DOUBLE_QUOTE + param + DOUBLE_QUOTE + COMMA + SPACE + param + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_RETURNING + OPEN_PARAN + OPEN_QUOTE + primary_value + CLOSED_QUOTE + CLOSED_PARAN + SEMI + LINEBR)
+			db_access.write(TAB + DB_ACCESS_WHEN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + function_name + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + DB_ACCESS_SPREAD + LINEBR)
+			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + primary_value.lower() + SEMI + LINEBR)
+			db_access.write(TAB + TAB + CLOSED_BRACKET + LINEBR)
+			db_access.write(TAB + CLOSED_PARAN + SEMI + LINEBR)
+			db_access.write(CLOSED_BRACKET + LINEBR + LINEBR)
+ 
+
 
 
 
@@ -297,8 +346,8 @@ def main():
 	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
-	sql_schema(filepath)
-	rest_api_gen(filepath, shell_path, directory)
-	#sql_access(filepath, directory)
+	#sql_schema(filepath)
+	#rest_api_gen(filepath, shell_path, directory)
+	sql_access(filepath, directory)
 
 main()
