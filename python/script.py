@@ -1,4 +1,4 @@
-import sys, os, json, subprocess, copy
+import sys, os, json, subprocess
 
 
 OPEN_QUOTE = "'"
@@ -131,7 +131,7 @@ def foreign_reference_route_gen(value_array, table_name):
 
 
 def rest_api_gen(filepath, shell_path, location_for_api):
-	#subprocess.call([shell_path, location_for_api])
+	subprocess.call([shell_path, location_for_api])
 	with open(filepath) as data_file:
 		data = json.load(data_file)
 	
@@ -194,7 +194,7 @@ def main():
 	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
-	#sql_schema(filepath)
+	sql_schema(filepath)
 	rest_api_gen(filepath, shell_path, directory)
 
 main()
