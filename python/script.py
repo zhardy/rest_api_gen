@@ -21,6 +21,7 @@ FW_SLASH = "/"
 BW_SLASH = "\\"
 TAB = "\t"
 EQUAL = " = "
+DOT = "."
 
 BEGIN_SCHEMA = """DROP SCHEMA public CASCADE;\n
 CREATE SCHEMA public;\n
@@ -34,7 +35,8 @@ FOREIGN_KEY = "foreign key"
 REF = " references "
 
 BEGIN_ROUTES = """var express = require('express');\n
-var router = express.Router();"""
+var router = express.Router();\n
+var db = require('../lib/dbAccess.js')"""
 END_ROUTES = "module.exports = router;"
 ROUTER_GET = "router.get('/"
 ROUTER_POST = "router.post('/"
@@ -43,18 +45,16 @@ ROUTER_PATCH = "router.patch('/"
 VAR = "var "
 REQ_BODY = "req.body."
 REQ_PARAM = "req.param."
-DB_GET = "Get"
-DB_UPDATE = "Update"
-DB_ALL = "All"
-DB_CREATE = "Create"
+ROUTE_DB_ACCESS = "db."
 BEGIN_IF = "if("
 BY = "By"
 SUCCESS = "success"
 ROUTER_FUNCTION_BEGIN = "function(req, res) { "
+ROUTE_THEN = "then(function(success){"
 ROUTER_FUNCTION_END = "}); \n\n"
-RES_JSON = "res.json"
+RES_JSON_SUCCESS = "res.json({success:true,"
 RES_INFO = "info: "
-MODULE_EXPORTS = "module.exports = router;"
+ROUTE_ERROR_FUNCTION = "\tfunction(err){\n\t\t\tres.json({success:false, error:err.toString()});\n\t});\n"
 
 DB_ACCESS_BEGIN = """var pg = require('pg');
 var squel = require('squel').useFlavour('postgres');
@@ -65,17 +65,25 @@ query.connectionParameters = "postgres://"\n
 
 DB_INTERNAL_CREATE = "create"
 DB_ACCESS_FUNCTION_BEGIN = "function"
-DB_ANONYMOUS_CALLBACK  = "function(data){\n\t\t\treturn data[0]."
-
+DB_ANONYMOUS_CALLBACK  = "function(data){\n\t\t\treturn data"
+DB_EXPORTS = "exports."
+DB_FIRST_RESULT = "[0]"
 
 DB_ACCESS_INSERT = "Insert"
 DB_ACCESS_SQUEL_INSERT = "squel.insert()"
+DB_ACCESS_SQUEL_SELECT = "squel.select()"
 DB_ACCESS_INTO = ".into"
 DB_ACCESS_SET = ".set"
 DB_ACCESS_RETURNING = ".returning"
-DB_ACCESS_WHEN = "when.all(["
+DB_ACCESS_WHEN = "return when.all(["
 DB_ACCESS_QUERY = "query"
 DB_ACCESS_SPREAD = "]).spread("
+DB_ACCESS_FROM = ".from"
+DB_ACCESS_JOIN = ".join"
+DB_GET = "Get"
+DB_UPDATE = "Update"
+DB_ALL = "All"
+DB_CREATE = "Create"
 
 
 splitter_for_appjs = "var users = require('./routes/users');\n"
@@ -155,9 +163,11 @@ def foreign_reference_route_gen(value_array, table_name):
 		second_value_array = [val for val in value_array if foreign_reference not in val["name"]]
 		foreign_reference_routes += ROUTER_GET + foreign_reference + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR
 		foreign_reference_routes += if_statements_for_requests_gen(second_value_array)[0]
-		foreign_reference_routes += TAB + VAR + foreign_reference + EQUAL + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY 
-		foreign_reference_routes += ', '.join([value["name"] for value in second_value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR
-		foreign_reference_routes += TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR
+		foreign_reference_routes += TAB + VAR + foreign_reference + EQUAL + ROUTE_DB_ACCESS + DB_GET + foreign_reference + BY + table_name + OPEN_PARAN + OPEN_ARRAY 
+		foreign_reference_routes += ', '.join([value["name"] for value in second_value_array]) + CLOSED_ARRAY + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR
+		foreign_reference_routes += TAB + TAB + RES_JSON_SUCCESS + RES_INFO + foreign_reference + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR
+		foreign_reference_routes += TAB + CLOSED_BRACKET + COMMA + LINEBR
+		foreign_reference_routes += ROUTE_ERROR_FUNCTION
 		foreign_reference_routes += ROUTER_FUNCTION_END
 	return foreign_reference_routes
 
@@ -184,8 +194,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			#everything in a table
 
 			js_route.write(ROUTER_GET + DB_ALL + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + DB_ALL + table_name + OPEN_PARAN + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
+			js_route.write(TAB + VAR + table_name + EQUAL + ROUTE_DB_ACCESS + DB_GET + DB_ALL + table_name + OPEN_PARAN + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + RES_JSON_SUCCESS + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
+			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END)
 
 
@@ -196,16 +207,18 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			only_declaration = if_statements_for_requests[1]
 			if_statements_for_requests = if_statements_for_requests[0]
 			js_route.write(if_statements_for_requests)
-			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY)
-			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
+			js_route.write(TAB + VAR + SPACE + table_name + EQUAL + ROUTE_DB_ACCESS +  DB_GET + table_name + OPEN_PARAN + OPEN_ARRAY)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + RES_JSON_SUCCESS + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
+			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END)
 
 			js_route.write(ROUTER_POST  + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(only_declaration)
-			js_route.write(TAB + VAR + primary_value + EQUAL + DB_CREATE + table_name + OPEN_PARAN + OPEN_ARRAY)
-			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + primary_value + CLOSED_BRACKET + CLOSED_PARAN + LINEBR)
+			js_route.write(TAB + VAR + primary_value + EQUAL + ROUTE_DB_ACCESS + DB_CREATE + table_name + OPEN_PARAN + OPEN_ARRAY)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in value_array]) + CLOSED_ARRAY + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + RES_JSON_SUCCESS + RES_INFO + primary_value + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
+			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END)
 
 			#write all routes to get an entry in a foreign table based on information about the table that is referencing it
@@ -217,8 +230,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			# route developed in the following pattern /{tablename}/#primaryValue
 			js_route.write(ROUTER_GET +  COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 			js_route.write(TAB + VAR + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
-			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + table_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(TAB + VAR + table_name + EQUAL + DB_GET + table_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + table_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
+			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 			# beginning work on put and patch
 
@@ -230,8 +244,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
 			js_route.write(if_except_primary)
 			js_route.write(TAB + VAR + SUCCESS + EQUAL + DB_UPDATE + table_name + OPEN_PARAN + OPEN_ARRAY)
-			js_route.write(', '.join([str(val["name"]).format(val) for val in all_except_primary]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in all_except_primary]) + CLOSED_ARRAY + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
+			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
 
@@ -239,8 +254,9 @@ def rest_api_gen(filepath, shell_path, location_for_api):
 			js_route.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
 			js_route.write(only_declaration)
 			js_route.write(TAB + VAR + SUCCESS + EQUAL + DB_UPDATE + table_name + OPEN_PARAN + OPEN_ARRAY)
-			js_route.write(', '.join([str(val["name"]).format(val) for val in all_except_primary]) + CLOSED_ARRAY + CLOSED_PARAN + SEMI + LINEBR)
-			js_route.write(TAB + RES_JSON + OPEN_PARAN + OPEN_BRACKET + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR)
+			js_route.write(', '.join([str(val["name"]).format(val) for val in all_except_primary]) + CLOSED_ARRAY + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB +CLOSED_BRACKET + COMMA + LINEBR)
+			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 			
 			js_route.write(END_ROUTES)
@@ -295,28 +311,64 @@ def sql_access(filepath, location_for_api):
 	db_access = open(lib_directory + "dbAccess.js", 'w')
 	db_access.write(DB_ACCESS_BEGIN)
 
+	export_function_array = []
+
 	for table in data:
 		if "type" not in table:
 			table_name = remove_s(str(table["name"]))
 			value_array = table["values"]
 			parameters = [str(val["name"]).format(val) for val in value_array if val["isPrimary"] == False]
 			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), str(value_array[0]["name"]))
-			function_name = table_name.lower() + DB_ACCESS_INSERT
+			internal_create_function_name = table_name.lower() + DB_ACCESS_INSERT
+			select_all_function_name = str(table["name"]).lower() + DB_ALL  
 
 			db_access.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_INTERNAL_CREATE + table_name + OPEN_PARAN + (', ').join(parameters) + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
-			db_access.write(TAB + VAR + function_name + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
+			db_access.write(TAB + VAR + internal_create_function_name + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
 			db_access.write(TAB + TAB + DB_ACCESS_INTO + OPEN_PARAN + DOUBLE_QUOTE + table["name"] + DOUBLE_QUOTE + CLOSED_PARAN + LINEBR)
 			for param in parameters:
 				db_access.write(TAB + TAB + DB_ACCESS_SET + OPEN_PARAN + DOUBLE_QUOTE + param + DOUBLE_QUOTE + COMMA + SPACE + param + CLOSED_PARAN + LINEBR)
 			db_access.write(TAB + TAB + DB_ACCESS_RETURNING + OPEN_PARAN + OPEN_QUOTE + primary_value + CLOSED_QUOTE + CLOSED_PARAN + SEMI + LINEBR)
 			db_access.write(TAB + DB_ACCESS_WHEN + LINEBR)
-			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + function_name + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + internal_create_function_name + CLOSED_PARAN + LINEBR)
 			db_access.write(TAB + DB_ACCESS_SPREAD + LINEBR)
-			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + primary_value.lower() + SEMI + LINEBR)
+			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + DB_FIRST_RESULT + DOT + primary_value.lower() + SEMI + LINEBR)
 			db_access.write(TAB + TAB + CLOSED_BRACKET + LINEBR)
 			db_access.write(TAB + CLOSED_PARAN + SEMI + LINEBR)
 			db_access.write(CLOSED_BRACKET + LINEBR + LINEBR)
- 
+
+
+			#select 
+			#include an alias name for each table in order to reference the field
+			#then join on those images with the foreign reference key pointing to the same key in the foreign table (see screenshot on desktop for example)
+			db_access.write(DB_EXPORTS + DB_GET + DB_ALL + table["name"] + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_GET + table["name"] + OPEN_PARAN + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+			db_access.write(TAB + VAR + select_all_function_name + EQUAL +  DB_ACCESS_SQUEL_SELECT + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table["name"] + CLOSED_QUOTE + CLOSED_PARAN)
+			foreign_reference_array = [value for value in value_array if value["isReference"] == True]
+			if len(foreign_reference_array) > 0:
+				db_access.write(LINEBR)
+			else:
+				db_access.write(SEMI + LINEBR)
+
+			for foreign_reference in foreign_reference_array:
+				foreign_table = str(foreign_reference["foreignTable"])
+				db_access.write(TAB + TAB + DB_ACCESS_JOIN + OPEN_PARAN + OPEN_QUOTE + foreign_table + CLOSED_QUOTE + COMMA + OPEN_QUOTE + foreign_table + DOT)
+				db_access.write(str(foreign_reference["foreignValue"]) + EQUAL + table["name"] + DOT + str(foreign_reference["name"]) + CLOSED_QUOTE + CLOSED_PARAN)
+				if foreign_reference == foreign_reference_array[len(foreign_reference_array)-1]:
+					db_access.write(SEMI + LINEBR)
+				else:
+					db_access.write(LINEBR)
+
+			db_access.write(TAB + DB_ACCESS_WHEN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + select_all_function_name + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + DB_ACCESS_SPREAD + LINEBR)
+			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK  + SEMI + LINEBR)
+			db_access.write(TAB + TAB + CLOSED_BRACKET + LINEBR)
+			db_access.write(TAB + CLOSED_PARAN + SEMI + LINEBR)
+
+			db_access.write(CLOSED_BRACKET + LINEBR + LINEBR)
+
+
+
 
 
 
@@ -347,7 +399,7 @@ def main():
 		directory = os.path.expanduser(directory)
 
 	#sql_schema(filepath)
-	#rest_api_gen(filepath, shell_path, directory)
+	rest_api_gen(filepath, shell_path, directory)
 	sql_access(filepath, directory)
 
 main()
