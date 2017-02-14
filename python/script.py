@@ -74,6 +74,8 @@ DB_ARRAY = "Array"
 DB_ACCESS_INSERT = "Insert"
 DB_ACCESS_SQUEL_INSERT = "squel.insert()"
 DB_ACCESS_SQUEL_SELECT = "squel.select()"
+DB_ACCESS_SQUEL_UPDATE = "squel.update()"
+DB_TABLE = ".table"
 DB_ACCESS_INTO = ".into"
 DB_ACCESS_SET = ".set"
 DB_ACCESS_RETURNING = ".returning"
@@ -89,7 +91,13 @@ DB_ALL = "All"
 DB_CREATE = "Create"
 DB_ERROR = "function(err){\n\t\t\twhen.reject(err);\n\t\t});"
 DB_TEMP = "temp"
-
+DB_QUERY_OBJECT = "var queryObject = {};"
+JS_EQUAL = " === "
+DB_UPDATE_FOR = "for(var prop in "
+PROP = "prop"
+SET_QUERY_OBJECT = "queryObject[prop] = "
+QUERY_LENGTH_STATEMENT = "if(queryObject.length && queryObject.length != 0){"
+DB_SET_FIELDS =".setFields(queryObject)"
 
 splitter_for_appjs = "var users = require('./routes/users');\n"
 
@@ -180,7 +188,7 @@ def if_statements_for_database_gen(array, object_name):
 	if_statements_for_database = ""
 	for value in array:
 		if_statements_for_database += TAB + VAR + value + SEMI + LINEBR
-		if_statements_for_database += TAB + BEGIN_IF + object_name + DOT + value + OR_FALSE + object_name + DOT + value + EQUAL + "false" + CLOSED_PARAN + OPEN_BRACKET + LINEBR
+		if_statements_for_database += TAB + BEGIN_IF + object_name + DOT + value + OR_FALSE + object_name + DOT + value + JS_EQUAL + "false" + CLOSED_PARAN + OPEN_BRACKET + LINEBR
 		if_statements_for_database += TAB + TAB + value + EQUAL + object_name + DOT + value + SEMI + LINEBR + TAB + CLOSED_BRACKET + LINEBR
 	return if_statements_for_database
 
@@ -389,8 +397,10 @@ def sql_access(filepath, location_for_api):
 			db_access.write(if_statements_for_database_gen(parameters, table_name))
 			db_access.write(TAB + DB_TEMP + DB_CREATE + table_name_s + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
 			db_access.write(TAB + TAB + DB_ACCESS_INTO + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
+			
 			for prop in parameters:
 				db_access.write(TAB + TAB + DB_ACCESS_SET + OPEN_PARAN + OPEN_QUOTE + prop + CLOSED_QUOTE + COMMA + prop + CLOSED_PARAN +  LINEBR)
+			
 			db_access.write(TAB + DB_ACCESS_WHEN + LINEBR)
 			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + DB_TEMP + DB_CREATE + table_name + CLOSED_PARAN + LINEBR)
 			db_access.write(TAB + DB_ACCESS_SPREAD + LINEBR)
@@ -404,16 +414,34 @@ def sql_access(filepath, location_for_api):
 			db_access.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name_s + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
 			db_access.write(TAB + TAB + DB_ACCESS_WHERE + OPEN_PARAN + OPEN_QUOTE + primary_value + EQUAL + "?" + CLOSED_QUOTE + COMMA + primary_value + CLOSED_PARAN + SEMI + LINEBR)
 			db_access.write(TAB + DB_ACCESS_WHEN + LINEBR)
-			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + table_name_s + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + table_name + CLOSED_PARAN + LINEBR)
 			db_access.write(TAB + DB_ACCESS_SPREAD + LINEBR)
 			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR)
 			db_access.write(TAB + CLOSED_BRACKET + COMMA + LINEBR)
 			db_access.write(TAB + TAB + DB_ERROR + LINEBR)
 			db_access.write(CLOSED_BRACKET + LINEBR + LINEBR)
 
-			#Insert into tablename with all the non-primary values of the rest
-			#update tablename
-			#how to determine null values
+			db_access.write(DB_EXPORTS + DB_UPDATE + table_name  + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_UPDATE + table_name + OPEN_PARAN + table_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+			db_access.write(TAB + VAR + DB_UPDATE.lower() + table_name + EQUAL + DB_ACCESS_SQUEL_UPDATE + LINEBR)
+			db_access.write(TAB + TAB + TAB + TAB + DB_TABLE + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE+ CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + DB_QUERY_OBJECT + LINEBR + TAB + DB_UPDATE_FOR + table_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+			db_access.write(TAB + TAB + BEGIN_IF + PROP + OR_FALSE + table_name + OPEN_ARRAY + PROP + CLOSED_ARRAY + JS_EQUAL + "false" + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+			db_access.write(TAB + TAB + TAB + SET_QUERY_OBJECT + table_name + OPEN_ARRAY + PROP + CLOSED_ARRAY + SEMI + LINEBR)
+			db_access.write(TAB + TAB + CLOSED_BRACKET + LINEBR)
+			db_access.write(TAB + TAB + QUERY_LENGTH_STATEMENT + LINEBR)
+			db_access.write(TAB + TAB + TAB + DB_UPDATE.lower() + table_name + EQUAL + DB_UPDATE.lower() + table_name + DB_SET_FIELDS + LINEBR)
+			db_access.write(TAB + TAB + TAB + TAB + TAB + TAB + DB_ACCESS_WHERE + OPEN_PARAN + OPEN_QUOTE + primary_value + EQUAL + "?" + CLOSED_QUOTE + COMMA + table_name + DOT + primary_value + CLOSED_PARAN + SEMI + LINEBR)
+			db_access.write(TAB + TAB + TAB + DB_ACCESS_WHEN  + LINEBR)
+			db_access.write(TAB + TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + DB_UPDATE.lower() + table_name + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + TAB + TAB + DB_ACCESS_SPREAD + LINEBR)
+			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR)
+			db_access.write(TAB + TAB +  CLOSED_BRACKET + COMMA + LINEBR)
+			db_access.write(TAB + TAB +  DB_ERROR + LINEBR)
+			db_access.write(TAB + TAB + TAB + CLOSED_BRACKET + LINEBR + TAB + TAB + CLOSED_BRACKET + LINEBR + TAB + CLOSED_BRACKET + LINEBR + LINEBR)
+
+
+			#Get foreign table entry given a distinct ID that joins with it
+			#Full creation of an object given all foreign references
 
 
 
