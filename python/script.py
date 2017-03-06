@@ -456,30 +456,20 @@ def sql_access(filepath, location_for_api):
 				db_access.write(TAB + TAB + DB_ERROR + LINEBR + CLOSED_BRACKET + LINEBR + LINEBR)
 
 
-			#Get foreign table entry given a distinct ID that joins with it
-			#Full creation of an object given all foreign references
-
-
-
 
 
 
 
 
 def main():
-	# if len(sys.argv) < 4:
-	# 	filepath = raw_input("Please provide an absolute filepath for the JSON:\n")
-	# 	shell_path = raw_input("Please provide an absolute filepath for the shell script:\n")
-	# 	directory = raw_input("Please provide an absolute filepath to create your new REST API:\n")
-	# else:
-	# 	filepath = sys.argv[1]
-	# 	shell_path = sys.argv[2]
-	# 	directory = sys.argv[3]
-	# sql_schema(filepath)
-
-	filepath = "~/Downloads/data (1).json"
-	shell_path = "~/programming/rest_api_gen/node/node.sh"
-	directory = "~/programming/rest_api_gen/test"
+	if len(sys.argv) < 4:
+		filepath = raw_input("Please provide an absolute filepath for the JSON:\n")
+		shell_path = raw_input("Please provide an absolute filepath for the shell script:\n")
+		directory = raw_input("Please provide an absolute filepath to create your new REST API:\n")
+	else:
+		filepath = sys.argv[1]
+		shell_path = sys.argv[2]
+		directory = sys.argv[3]
 
 	if "~" in filepath:
 		filepath = os.path.expanduser(filepath)
@@ -490,7 +480,7 @@ def main():
 	if "~" in directory:
 		directory = os.path.expanduser(directory)
 
-	#sql_schema(filepath)
+	sql_schema(filepath)
 	rest_api_gen(filepath, shell_path, directory)
 	sql_access(filepath, directory)
 
