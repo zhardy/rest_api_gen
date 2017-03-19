@@ -108,7 +108,7 @@ def remove_s(string):
 	if str.lower(string[len(string)-1]) == "s":
 		string = string[0:len(string)-1]
 	return string
-	
+
 def if_statements_for_requests_gen(array):
 	if_statements_for_requests = ""
 	for value in array:
@@ -172,10 +172,10 @@ def sql_schema(filepath, shell_path, location_for_api):
 			#Variables to be set after going through values for each
 			primary = None
 			foreign = []
-			table_name_s = str(table["name"])
-			object_name = remove_s(table_name_s)
+			table_name = str(table["name"])
+			object_name = remove_s(table_name)
 
-			location_for_js_route = location_for_api + "/routes/" + table["name"]
+			location_for_js_route = location_for_api + "/routes/" + table_name
 			js_route = open(location_for_js_route + ".js", 'w')
 			list_of_routes.append(location_for_js_route )
 
@@ -188,7 +188,8 @@ def sql_schema(filepath, shell_path, location_for_api):
 			#get primary value
 			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), str(value_array[0]["name"]))
 
-			db_arch.write(CREATE_TABLE_BEGIN + table_name_s + OPEN_PARAN + LINEBR)
+			#begin table creation
+			db_arch.write(CREATE_TABLE_BEGIN + table_name + OPEN_PARAN + LINEBR)
 
 			for value in table["values"]:
 				if "length" in value["type"] and int(value["type"]["length"]) != 0:
@@ -216,7 +217,7 @@ def sql_schema(filepath, shell_path, location_for_api):
 			#everything in a table
 
 			js_route.write(ROUTER_GET + DB_ALL + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			js_route.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + DB_GET + DB_ALL + table_name_s + OPEN_PARAN + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+			js_route.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + DB_GET + DB_ALL + table_name + OPEN_PARAN + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 			js_route.write(TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 			js_route.write(TAB + ROUTE_ERROR_FUNCTION)
 			js_route.write(ROUTER_FUNCTION_END)
@@ -346,7 +347,7 @@ def sql_access(filepath, location_for_api):
 	for table in data:
 		if "type" not in table:
 			object_name = remove_s(str(table["name"]))
-			table_name_s = str(table["name"])
+			table_name = str(table["name"])
 			value_array = table["values"]
 			parameters = [str(val["name"]).format(val) for val in value_array if val["isPrimary"] == False]
 			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), str(value_array[0]["name"]))
@@ -393,7 +394,7 @@ def sql_access(filepath, location_for_api):
 			for foreign_reference in foreign_reference_array:
 				foreign_table = str(foreign_reference["foreignTable"])
 				foreign_join += TAB + TAB + DB_ACCESS_JOIN + OPEN_PARAN + OPEN_QUOTE + foreign_table + CLOSED_QUOTE + COMMA + NULL + COMMA + OPEN_QUOTE + foreign_table + DOT
-				foreign_join += str(foreign_reference["foreignValue"]) + EQUAL + table_name_s + DOT + str(foreign_reference["name"]) + CLOSED_QUOTE + CLOSED_PARAN
+				foreign_join += str(foreign_reference["foreignValue"]) + EQUAL + table_name + DOT + str(foreign_reference["name"]) + CLOSED_QUOTE + CLOSED_PARAN
 				if foreign_reference != foreign_reference_array[len(foreign_reference_array)-1]:
 					foreign_join += LINEBR
 
@@ -426,7 +427,7 @@ def sql_access(filepath, location_for_api):
 			db_access.write(object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 			db_access.write(if_statements_for_database_gen(parameters, object_name))
 			db_access.write(TAB + DB_TEMP + DB_CREATE + object_name + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
-			db_access.write(TAB + TAB + DB_ACCESS_INTO + OPEN_PARAN + OPEN_QUOTE + table_name_s + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_INTO + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
 			
 			for prop in parameters:
 				db_access.write(TAB + TAB + DB_ACCESS_SET + OPEN_PARAN + OPEN_QUOTE + prop + CLOSED_QUOTE + COMMA + prop + CLOSED_PARAN +  LINEBR)
@@ -441,7 +442,7 @@ def sql_access(filepath, location_for_api):
 
 			db_access.write(DB_EXPORTS + DB_GET + by_primary_value + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_GET + by_primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 			db_access.write(TAB + VAR + object_name.lower() + EQUAL + DB_ACCESS_SQUEL_SELECT + LINEBR)
-			db_access.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name_s + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
+			db_access.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
 			db_access.write(foreign_join + LINEBR)
 
 			db_access.write(TAB + TAB + DB_ACCESS_WHERE + OPEN_PARAN + OPEN_QUOTE + primary_value + EQUAL + "?" + CLOSED_QUOTE + COMMA + primary_value + CLOSED_PARAN + SEMI + LINEBR)
