@@ -491,18 +491,14 @@ def sql_access(filepath, location_for_api):
 
 
 def main():
-	# if len(sys.argv) < 4:
-	# 	filepath = raw_input("Please provide an absolute filepath for the JSON:\n")
-	# 	shell_path = raw_input("Please provide an absolute filepath for the shell script:\n")
-	# 	directory = raw_input("Please provide an absolute filepath to create your new REST API:\n")
-	# else:
-	# 	filepath = sys.argv[1]
-	# 	shell_path = sys.argv[2]
-	# 	directory = sys.argv[3]
-
-	filepath = "~/Downloads/data (1).json"
-	shell_path = "./node/node.sh"
-	directory = "./test"
+	 if len(sys.argv) < 4:
+	 	filepath = raw_input("Please provide an absolute filepath for the JSON:\n")
+	 	shell_path = raw_input("Please provide an absolute filepath for the shell script:\n")
+	 	directory = raw_input("Please provide an absolute filepath to create your new REST API:\n")
+	 else:
+	 	filepath = sys.argv[1]
+	 	shell_path = sys.argv[2]
+	 	directory = sys.argv[3]
 
 	if "~" in filepath:
 		filepath = os.path.expanduser(filepath)
