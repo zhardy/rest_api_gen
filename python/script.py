@@ -238,13 +238,27 @@ def post_db_route(route_writer, db_writer, object_name, table_name, primary_valu
 	db_writer.write(CLOSED_BRACKET + LINEBR + LINEBR)
 
 	#return function_name
-def get_primary_value_db_route(route_writer, db_writer, object_name, primary_value):
+def get_primary_value_db_route(route_writer, db_writer, table_name, object_name, primary_value, foreign_join):
+	function_name = DB_GET + object_name + BY + primary_value
 	route_writer.write(ROUTER_GET + COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	route_writer.write(TAB + VAR + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
-	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + DB_GET + object_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + function_name + OPEN_PARAN + primary_value + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+
+	db_writer.write(DB_EXPORTS + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + function_name + OPEN_PARAN + primary_value + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+	db_writer.write(TAB + VAR + object_name.lower() + EQUAL + DB_ACCESS_SQUEL_SELECT + LINEBR)
+	db_writer.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
+	db_writer.write(foreign_join + LINEBR)
+	db_writer.write(TAB + TAB + DB_ACCESS_WHERE + OPEN_PARAN + OPEN_QUOTE + primary_value + EQUAL + "?" + CLOSED_QUOTE + COMMA + primary_value + CLOSED_PARAN + SEMI + LINEBR)
+	db_writer.write(TAB + DB_ACCESS_WHEN + LINEBR)
+	db_writer.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + object_name.lower() + CLOSED_PARAN + LINEBR)
+	db_writer.write(TAB + DB_ACCESS_SPREAD + LINEBR)
+	db_writer.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR)
+	db_writer.write(TAB + CLOSED_BRACKET + COMMA + LINEBR)
+	db_writer.write(TAB + TAB + DB_ERROR + LINEBR)
+	db_writer.write(CLOSED_BRACKET + LINEBR + LINEBR)
 
 
 
@@ -353,13 +367,7 @@ def sql_schema(filepath, shell_path, location_for_api):
 			js_route.write(foreign_reference_route_gen(value_array, object_name))
 
 			# route developed in the following pattern /{tablename}/#primaryValue
-			get_primary_value_db_route(js_route, db_access, object_name, primary_value)
-			# js_route.write(ROUTER_GET + COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-			# js_route.write(TAB + VAR + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
-			# js_route.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + DB_GET + object_name + BY + primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
-			# js_route.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
-			# js_route.write(TAB + ROUTE_ERROR_FUNCTION)
-			# js_route.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
+			get_primary_value_db_route(js_route, db_access, table_name, object_name, primary_value, foreign_join)
 
 			#All values except primary
 			if_except_primary = if_statements_for_requests_gen(all_except_primary)
@@ -484,20 +492,6 @@ def sql_access(filepath, location_for_api):
 				foreign_join += str(foreign_reference["foreignValue"]) + EQUAL + table_name + DOT + str(foreign_reference["name"]) + CLOSED_QUOTE + CLOSED_PARAN
 				if foreign_reference != foreign_reference_array[len(foreign_reference_array)-1]:
 					foreign_join += LINEBR
-
-			db_access.write(DB_EXPORTS + DB_GET + by_primary_value + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_GET + by_primary_value + OPEN_PARAN + primary_value + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
-			db_access.write(TAB + VAR + object_name.lower() + EQUAL + DB_ACCESS_SQUEL_SELECT + LINEBR)
-			db_access.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
-			db_access.write(foreign_join + LINEBR)
-
-			db_access.write(TAB + TAB + DB_ACCESS_WHERE + OPEN_PARAN + OPEN_QUOTE + primary_value + EQUAL + "?" + CLOSED_QUOTE + COMMA + primary_value + CLOSED_PARAN + SEMI + LINEBR)
-			db_access.write(TAB + DB_ACCESS_WHEN + LINEBR)
-			db_access.write(TAB + TAB + DB_ACCESS_QUERY + OPEN_PARAN + object_name.lower() + CLOSED_PARAN + LINEBR)
-			db_access.write(TAB + DB_ACCESS_SPREAD + LINEBR)
-			db_access.write(TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR)
-			db_access.write(TAB + CLOSED_BRACKET + COMMA + LINEBR)
-			db_access.write(TAB + TAB + DB_ERROR + LINEBR)
-			db_access.write(CLOSED_BRACKET + LINEBR + LINEBR)
 
 			db_access.write(DB_EXPORTS + DB_UPDATE + object_name + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_UPDATE + object_name + OPEN_PARAN + object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 			db_access.write(TAB + VAR + DB_UPDATE.lower() + object_name + EQUAL + DB_ACCESS_SQUEL_UPDATE + LINEBR)
