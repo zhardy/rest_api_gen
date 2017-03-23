@@ -105,6 +105,23 @@ def remove_s(string):
 		string = string[0:len(string)-1]
 	return string
 
+def initilize_variables(table):
+	table_name = str(table["name"])
+	object_name = remove_s(table_name)
+	value_array = table["values"]
+	all_except_primary = []
+	foreign = []
+	primary_value = None
+	for value in value_array:
+		if value["isPrimary"] == True:
+			primary_value = value["name"]
+		else:
+			all_except_primary.append(value)
+			if value["isReference"] == True:
+				foreign.append(value)
+	return table_name, object_name, primary_value, value_array, all_except_primary, foreign
+
+
 def if_statements_for_requests_gen(array):
 	if_statements_for_requests = ""
 	for value in array:
@@ -306,7 +323,7 @@ def patch_db_route(route_writer, object_name, value_array, all_except_primary, p
 	route_writer.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
 def sql_schema(filepath, shell_path, location_for_api):
-	subprocess.call([shell_path, location_for_api])
+	# subprocess.call([shell_path, location_for_api])
 	#Get JSON
 	list_of_routes = []
 
@@ -316,14 +333,23 @@ def sql_schema(filepath, shell_path, location_for_api):
 	#Create SQL schema document
 	db_arch = open('db_architecture.sql', 'w+')
 	db_arch.write(BEGIN_SCHEMA + LINEBR + LINEBR)
-	with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
-		pg_query_reader = pg_query_lib.read()
-	pg_query_reader = pg_query_reader.split('q = text.toQuery ? text.toQuery() : text;')
-	pg_query_reader.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
-	pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
-	for modified_line in pg_query_reader:
-		pg_query.write(modified_line)
+	# with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
+	# 	pg_query_reader = pg_query_lib.read()
+	# pg_query_reader = pg_query_reader.split('q = text.toQuery ? text.toQuery() : text;')
+	# pg_query_reader.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
+	# pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
+	# for modified_line in pg_query_reader:
+	# 	pg_query.write(modified_line)
 
+
+	lib_directory = location_for_api + "/lib/"
+
+	if(not os.path.exists(lib_directory)):
+		os.mkdir(lib_directory)
+
+	db_access = open(lib_directory + "dbAccess.js", 'w+')
+
+	db_access.write(DB_ACCESS_BEGIN)
 
 	#For each table in the data dictionary
 	for table in data:
@@ -339,68 +365,42 @@ def sql_schema(filepath, shell_path, location_for_api):
 
 		else:
 			#Variables to be set after going through values for each
-			primary = None
-			foreign = []
-			table_name = str(table["name"])
-			object_name = remove_s(table_name)
-			#javascript route
+			table_name, object_name, primary_value, value_array, all_except_primary, foreign_reference_array = initilize_variables(table)
+
 			location_for_js_route = location_for_api + "/routes/" + table_name
 			js_route = open(location_for_js_route + ".js", 'w')
-
-			lib_directory = location_for_api + "/lib/"
-
-			if(not os.path.exists(lib_directory)):
-				os.mkdir(lib_directory)
 			db_access = open(lib_directory + "dbAccess.js", 'a')
 
-			list_of_routes.append(location_for_js_route )
-
-			#list of values names
-			value_array = table["values"]
-
-			#list of values that are non primary
-			all_except_primary = [value for value in value_array if value["isPrimary"] == False]
-
-			#get primary value
-			primary_value = next((str(value["name"]) for value in value_array if value["isPrimary"] == True), str(value_array[0]["name"]))
-
-			#array of just foreign references
-			foreign_reference_array = [value for value in value_array if value["isReference"] == True]
+			list_of_routes.append(location_for_js_route)
 
 			#begin table creation
 			db_arch.write(CREATE_TABLE_BEGIN + table_name + OPEN_PARAN + LINEBR)
 
+			
+
 			#for each value in table
-			for value in table["values"]:
+			for value in value_array:
 				if "length" in value["type"] and int(value["type"]["length"]) != 0:
 					db_arch.write(value["name"] + SPACE + value["type"]["name"] + OPEN_PARAN + str(value["type"]["length"]) + CLOSED_PARAN + COMMA + LINEBR)
 				else:
 					db_arch.write(value["name"] + SPACE + value["type"]["name"] + COMMA + LINEBR)
 
-				if value["isPrimary"]:
-					primary = value
-
-				if value["isReference"]:
-					foreign.append(value)
-
-			for key in foreign:
-				db_arch.write(FOREIGN_KEY + OPEN_PARAN + key["name"] + CLOSED_PARAN + REF + key["foreignTable"] + COMMA + LINEBR)
-
-			if primary != None:
-				db_arch.write(PRIMARY_KEY + OPEN_PARAN + primary["name"] + CLOSED_PARAN + LINEBR)
-
 			foreign_join = ""
 			for foreign_reference in foreign_reference_array:
 				foreign_table = str(foreign_reference["foreignTable"])
+
+				db_arch.write(FOREIGN_KEY + OPEN_PARAN + foreign_reference["name"] + CLOSED_PARAN + REF + foreign_reference["foreignTable"] + COMMA + LINEBR)
 				foreign_join += TAB + TAB + DB_ACCESS_JOIN + OPEN_PARAN + OPEN_QUOTE + foreign_table + CLOSED_QUOTE + COMMA + NULL + COMMA + OPEN_QUOTE + foreign_table + DOT
 				foreign_join += str(foreign_reference["foreignValue"]) + EQUAL + table_name + DOT + str(foreign_reference["name"]) + CLOSED_QUOTE + CLOSED_PARAN
 				if foreign_reference != foreign_reference_array[len(foreign_reference_array)-1]:
 					foreign_join += LINEBR
+
+			if primary_value != None:
+				db_arch.write(PRIMARY_KEY + OPEN_PARAN + primary_value + CLOSED_PARAN + LINEBR)	
 			
 			db_arch.write(CLOSED_PARAN + SEMI + LINEBR + LINEBR)
 
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
-			db_access.write(DB_ACCESS_BEGIN)
 
 			#everything in a table
 			get_all_db_route(js_route, db_access, object_name, table_name, foreign_reference_array)
@@ -443,31 +443,31 @@ def sql_schema(filepath, shell_path, location_for_api):
 				db_access.write(TAB + TAB + TAB + DB_ACCESS_SPREAD +LINEBR + TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR + TAB + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 				db_access.write(TAB + TAB + DB_ERROR + LINEBR + CLOSED_BRACKET + LINEBR + LINEBR)
 			
-		#read in app.js to include routes in routes
-	with open(location_for_api + "/app.js") as app_file:
-		data = app_file.read()
-	data = data.split(splitter_for_appjs)
-	app_file = open(location_for_api + "/app.js", 'w')
-	#write beginning of file back
-	app_file.write(data[0])
-	for route in list_of_routes:
-		#remove directory for api so we can refer to it locally (easier for deployment)
-		route = route.split(location_for_api)[1]
-		#create a variable name for this route to be known as
-		name = route.split("/routes/")[1]
-		#set variable name (described above) equal to route module location
-		app_file.write("var " + name + " = require('." + route + "');\n")
-	#The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
-	data[1] = data[1].split("app.use('/users', users);")
-	#write the first part of the last section out
-	app_file.write(data[1][0])
-	for route in list_of_routes:
-		#again, get the last name
-		name = route.split("/routes/")[1]
-		#set the web application to use the name
-		app_file.write("app.use('/"+ name + "', " + name + ");\n")
-	#write the final part out
-	app_file.write(data[1][1])
+		##read in app.js to include routes in routes
+	# with open(location_for_api + "/app.js") as app_file:
+	# 	data = app_file.read()
+	# data = data.split(splitter_for_appjs)
+	# app_file = open(location_for_api + "/app.js", 'w')
+	# #write beginning of file back
+	# app_file.write(data[0])
+	# for route in list_of_routes:
+	# 	#remove directory for api so we can refer to it locally (easier for deployment)
+	# 	route = route.split(location_for_api)[1]
+	# 	#create a variable name for this route to be known as
+	# 	name = route.split("/routes/")[1]
+	# 	#set variable name (described above) equal to route module location
+	# 	app_file.write("var " + name + " = require('." + route + "');\n")
+	# #The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
+	# data[1] = data[1].split("app.use('/users', users);")
+	# #write the first part of the last section out
+	# app_file.write(data[1][0])
+	# for route in list_of_routes:
+	# 	#again, get the last name
+	# 	name = route.split("/routes/")[1]
+	# 	#set the web application to use the name
+	# 	app_file.write("app.use('/"+ name + "', " + name + ");\n")
+	# #write the final part out
+	# app_file.write(data[1][1])
 
 
 def main():
