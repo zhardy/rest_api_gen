@@ -159,14 +159,16 @@ def if_statements_for_database_gen(array, object_name):
 
 def get_all_db_route(route_writer, db_writer, object_name, table_name, foreign_reference_array):
 	temp_var_name = table_name.lower() + DB_ALL
-	function_name = DB_GET + DB_ALL + table_name
+	function_name =  DB_ALL + table_name
+	external_function_name = DB_GET + function_name
+	internal_function_name + DB_GET.lower() + function_name
 	route_writer.write(ROUTER_GET + DB_ALL + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
-	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + function_name + OPEN_PARAN + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + external_function_name + OPEN_PARAN + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END)
 
-	db_writer.write(DB_EXPORTS + DB_GET + DB_ALL + table_name + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_GET + object_name + OPEN_PARAN + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + internal_function_name + OPEN_PARAN + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 	db_writer.write(TAB + VAR + temp_var_name + EQUAL +  DB_ACCESS_SQUEL_SELECT + LINEBR)
 	db_writer.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN)
 	if len(foreign_reference_array) > 0:
@@ -189,24 +191,27 @@ def get_all_db_route(route_writer, db_writer, object_name, table_name, foreign_r
 	db_writer.write(TAB + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	db_writer.write(TAB + TAB + DB_ERROR + LINEBR)
 	db_writer.write(CLOSED_BRACKET + LINEBR + LINEBR)
-
-	#return db_get + db_all + table_name
+	return_dict = dict()
+	return_dict["internal_function_name"] = internal_function_name
+	return_dict["external_function_name"] = external_function_name
+	return return_dict
 
 def get_single_db_route(route_writer, db_writer, object_name, table_name, value_array, foreign_join):
-	function_name = DB_GET + object_name
+	external_function_name = DB_GET + object_name
+	internal_function_name = DB_GET.lower() + object_name
 	temp_var_name = DB_TEMP + object_name
 	if_statements_for_requests = if_statements_for_requests_gen(value_array)
 
 	route_writer.write(ROUTER_GET + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	route_writer.write(if_statements_for_requests)
-	route_writer.write(TAB + VAR + SPACE + object_name + EQUAL + ROUTE_DB_ACCESS +  function_name + OPEN_PARAN + OPEN_BRACKET + LINEBR)
+	route_writer.write(TAB + VAR + SPACE + object_name + EQUAL + ROUTE_DB_ACCESS +  external_function_name + OPEN_PARAN + OPEN_BRACKET + LINEBR)
 	route_writer.write(',\n'.join(["\t\t" + str(val["name"]).format(val) + COLON + str(val["name"]).format(val) for val in value_array]) + LINEBR)
 	route_writer.write(TAB + CLOSED_BRACKET + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END)
 
-	db_writer.write(DB_EXPORTS + DB_GET + object_name + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_GET + object_name + OPEN_PARAN + object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + internal_function_name + OPEN_PARAN + object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 	db_writer.write(TAB + VAR + temp_var_name + EQUAL + DB_ACCESS_SQUEL_SELECT + LINEBR)
 	db_writer.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + object_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
 	
@@ -221,11 +226,15 @@ def get_single_db_route(route_writer, db_writer, object_name, table_name, value_
 	db_writer.write(TAB + TAB + TAB + DB_ACCESS_SPREAD + LINEBR + TAB + TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR)
 	db_writer.write(TAB + TAB + CLOSED_BRACKET + COMMA + LINEBR + TAB + TAB + DB_ERROR + LINEBR)
 	db_writer.write(CLOSED_BRACKET + LINEBR + LINEBR)
-
-	#return db_get + object_name
+	
+	return_dict = dict()
+	return_dict["internal_function_name"] = internal_function_name
+	return_dict["external_function_name"] = external_function_name
+	return return_dict
 
 def post_db_route(route_writer, db_writer, object_name, table_name, primary_value, all_except_primary):
-	function_name = DB_CREATE + object_name
+	external_function_name = DB_CREATE + object_name
+	internal_function_name = DB_CREATE.lower() + object_name
 	route_writer.write(ROUTER_POST  + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	if_statements_for_requests = if_statements_for_requests_gen(all_except_primary)
 	route_writer.write(if_statements_for_requests)
@@ -236,7 +245,7 @@ def post_db_route(route_writer, db_writer, object_name, table_name, primary_valu
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END)
 
-	db_writer.write(DB_EXPORTS + DB_CREATE + object_name + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_CREATE + object_name + OPEN_PARAN)
+	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + function_name + OPEN_PARAN)
 	db_writer.write(object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 	db_writer.write(if_statements_for_database_gen(all_except_primary, object_name))
 	db_writer.write(TAB + DB_TEMP + DB_CREATE + object_name + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
@@ -253,18 +262,24 @@ def post_db_route(route_writer, db_writer, object_name, table_name, primary_valu
 	db_writer.write(TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	db_writer.write(TAB + TAB + DB_ERROR + LINEBR)
 	db_writer.write(CLOSED_BRACKET + LINEBR + LINEBR)
+	return_dict = dict()
+	return_dict["internal_function_name"] = internal_function_name
+	return_dict["external_function_name"] = external_function_name
+	return return_dict
 
-	#return function_name
 def get_primary_value_db_route(route_writer, db_writer, table_name, object_name, primary_value, foreign_join):
-	function_name = DB_GET + object_name + BY + primary_value
+	function_name = object_name + BY + primary_value
+	external_function_name = DB_GET + function_name
+	internal_function_name = DB_GET.lower() + function_name
+
 	route_writer.write(ROUTER_GET + COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	route_writer.write(TAB + VAR + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
-	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + function_name + OPEN_PARAN + primary_value + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
+	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + external_function_name + OPEN_PARAN + primary_value + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
-	db_writer.write(DB_EXPORTS + function_name + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + function_name + OPEN_PARAN + primary_value + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + internal_function_name + OPEN_PARAN + primary_value + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 	db_writer.write(TAB + VAR + object_name.lower() + EQUAL + DB_ACCESS_SQUEL_SELECT + LINEBR)
 	db_writer.write(TAB + TAB + DB_ACCESS_FROM + OPEN_PARAN + OPEN_QUOTE + table_name + CLOSED_QUOTE + CLOSED_PARAN + LINEBR)
 	db_writer.write(foreign_join + LINEBR)
@@ -277,20 +292,28 @@ def get_primary_value_db_route(route_writer, db_writer, table_name, object_name,
 	db_writer.write(TAB + TAB + DB_ERROR + LINEBR)
 	db_writer.write(CLOSED_BRACKET + LINEBR + LINEBR)
 
+	return_dict = dict()
+	return_dict["internal_function_name"] = internal_function_name
+	return_dict["external_function_name"] = external_function_name
+	return return_dict
+
+
 def put_db_route(route_writer, db_writer, object_name, value_array, all_except_primary, primary_value):
 	if_except_primary = if_statements_for_requests_gen(all_except_primary)
+	external_function_name = DB_UPDATE + object_name
+	internal_function_name = DB_UPDATE.lower()  + object_name
 
 	route_writer.write(ROUTER_PUT + COLON + primary_value + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	route_writer.write(TAB + VAR + SPACE + primary_value + EQUAL + REQ_PARAM + primary_value + SEMI + LINEBR)
 	route_writer.write(if_except_primary)
-	route_writer.write(TAB + VAR + SUCCESS + EQUAL + ROUTE_DB_ACCESS + DB_UPDATE + object_name + OPEN_PARAN + OPEN_BRACKET + LINEBR)
+	route_writer.write(TAB + VAR + SUCCESS + EQUAL + ROUTE_DB_ACCESS + external_function_name + OPEN_PARAN + OPEN_BRACKET + LINEBR)
 	route_writer.write(',\n'.join(["\t\t" + str(val["name"]).format(val) + COLON + str(val["name"]).format(val) for val in value_array]) + LINEBR)
 	route_writer.write(TAB + CLOSED_BRACKET + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + TAB + RES_JSON_SUCCESS + RES_INFO + SUCCESS + CLOSED_BRACKET + CLOSED_PARAN + SEMI + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
-	db_writer.write(DB_EXPORTS + DB_UPDATE + object_name + EQUAL + DB_ACCESS_FUNCTION_BEGIN + SPACE + DB_UPDATE + object_name + OPEN_PARAN + object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
+	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + internal_function_name + OPEN_PARAN + object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 	db_writer.write(TAB + VAR + DB_UPDATE.lower() + object_name + EQUAL + DB_ACCESS_SQUEL_UPDATE + LINEBR)
 	db_writer.write(TAB + TAB + TAB + TAB + DB_TABLE + OPEN_PARAN + OPEN_QUOTE + object_name + CLOSED_QUOTE+ CLOSED_PARAN + LINEBR)
 	db_writer.write(TAB + DB_QUERY_OBJECT + LINEBR + TAB + DB_PROP_FOR + object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
@@ -308,6 +331,11 @@ def put_db_route(route_writer, db_writer, object_name, value_array, all_except_p
 	db_writer.write(TAB + TAB +  DB_ERROR + LINEBR)
 	db_writer.write(TAB + TAB + TAB + CLOSED_BRACKET + LINEBR + TAB + CLOSED_BRACKET + LINEBR + LINEBR)
 
+	return_dict = dict()
+	return_dict["internal_function_name"] = internal_function_name
+	return_dict["external_function_name"] = external_function_name
+	return return_dict
+
 def patch_db_route(route_writer, object_name, value_array, all_except_primary, primary_value):
 	only_declaration_except_primary = ';\n'.join(["\tvar " + str(val["name"]).format(val) + EQUAL + REQ_PARAM + str(val["name"]).format(val) for val in all_except_primary])
 	only_declaration_except_primary += ";\n"
@@ -323,7 +351,7 @@ def patch_db_route(route_writer, object_name, value_array, all_except_primary, p
 	route_writer.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
 def sql_schema(filepath, shell_path, location_for_api):
-	 subprocess.call([shell_path, location_for_api])
+	# subprocess.call([shell_path, location_for_api])
 	#Get JSON
 	list_of_routes = []
 
@@ -333,13 +361,13 @@ def sql_schema(filepath, shell_path, location_for_api):
 	#Create SQL schema document
 	db_arch = open('db_architecture.sql', 'w+')
 	db_arch.write(BEGIN_SCHEMA + LINEBR + LINEBR)
-	with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
-		pg_query_reader = pg_query_lib.read()
-	pg_query_reader = pg_query_reader.split('q = text.toQuery ? text.toQuery() : text;')
-	pg_query_reader.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
-	pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
-	for modified_line in pg_query_reader:
-		pg_query.write(modified_line)
+	# with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
+	# 	pg_query_reader = pg_query_lib.read()
+	# pg_query_reader = pg_query_reader.split('q = text.toQuery ? text.toQuery() : text;')
+	# pg_query_reader.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
+	# pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
+	# for modified_line in pg_query_reader:
+	# 	pg_query.write(modified_line)
 
 
 	lib_directory = location_for_api + "/lib/"
@@ -443,31 +471,31 @@ def sql_schema(filepath, shell_path, location_for_api):
 				db_access.write(TAB + TAB + TAB + DB_ACCESS_SPREAD +LINEBR + TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR + TAB + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 				db_access.write(TAB + TAB + DB_ERROR + LINEBR + CLOSED_BRACKET + LINEBR + LINEBR)
 			
-	#read in app.js to include routes in routes
-	with open(location_for_api + "/app.js") as app_file:
-		data = app_file.read()
-	data = data.split(splitter_for_appjs)
-	app_file = open(location_for_api + "/app.js", 'w')
-	#write beginning of file back
-	app_file.write(data[0])
-	for route in list_of_routes:
-		#remove directory for api so we can refer to it locally (easier for deployment)
-		route = route.split(location_for_api)[1]
-		#create a variable name for this route to be known as
-		name = route.split("/routes/")[1]
-		#set variable name (described above) equal to route module location
-		app_file.write("var " + name + " = require('." + route + "');\n")
-	#The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
-	data[1] = data[1].split("app.use('/users', users);")
-	#write the first part of the last section out
-	app_file.write(data[1][0])
-	for route in list_of_routes:
-		#again, get the last name
-		name = route.split("/routes/")[1]
-		#set the web application to use the name
-		app_file.write("app.use('/"+ name + "', " + name + ");\n")
-	#write the final part out
-	app_file.write(data[1][1])
+	##read in app.js to include routes in routes
+	# with open(location_for_api + "/app.js") as app_file:
+	# 	data = app_file.read()
+	# data = data.split(splitter_for_appjs)
+	# app_file = open(location_for_api + "/app.js", 'w')
+	# #write beginning of file back
+	# app_file.write(data[0])
+	# for route in list_of_routes:
+	# 	#remove directory for api so we can refer to it locally (easier for deployment)
+	# 	route = route.split(location_for_api)[1]
+	# 	#create a variable name for this route to be known as
+	# 	name = route.split("/routes/")[1]
+	# 	#set variable name (described above) equal to route module location
+	# 	app_file.write("var " + name + " = require('." + route + "');\n")
+	# #The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
+	# data[1] = data[1].split("app.use('/users', users);")
+	# #write the first part of the last section out
+	# app_file.write(data[1][0])
+	# for route in list_of_routes:
+	# 	#again, get the last name
+	# 	name = route.split("/routes/")[1]
+	# 	#set the web application to use the name
+	# 	app_file.write("app.use('/"+ name + "', " + name + ");\n")
+	# #write the final part out
+	# app_file.write(data[1][1])
 
 
 def main():
