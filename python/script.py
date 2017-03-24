@@ -161,7 +161,7 @@ def get_all_db_route(route_writer, db_writer, object_name, table_name, foreign_r
 	temp_var_name = table_name.lower() + DB_ALL
 	function_name =  DB_ALL + table_name
 	external_function_name = DB_GET + function_name
-	internal_function_name + DB_GET.lower() + function_name
+	internal_function_name = DB_GET.lower() + function_name
 	route_writer.write(ROUTER_GET + DB_ALL + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	route_writer.write(TAB + VAR + object_name + EQUAL + ROUTE_DB_ACCESS + external_function_name + OPEN_PARAN + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + RES_JSON_SUCCESS + RES_INFO + object_name + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
@@ -238,14 +238,14 @@ def post_db_route(route_writer, db_writer, object_name, table_name, primary_valu
 	route_writer.write(ROUTER_POST  + CLOSED_QUOTE + COMMA + SPACE + ROUTER_FUNCTION_BEGIN + LINEBR)
 	if_statements_for_requests = if_statements_for_requests_gen(all_except_primary)
 	route_writer.write(if_statements_for_requests)
-	route_writer.write(TAB + VAR + primary_value + EQUAL + ROUTE_DB_ACCESS + function_name + OPEN_PARAN + OPEN_BRACKET + LINEBR )
+	route_writer.write(TAB + VAR + primary_value + EQUAL + ROUTE_DB_ACCESS + external_function_name + OPEN_PARAN + OPEN_BRACKET + LINEBR )
 	route_writer.write(',\n'.join(["\t\t" + str(val["name"]).format(val) + COLON + str(val["name"]).format(val) for val in all_except_primary]) + LINEBR) 
 	route_writer.write(TAB + CLOSED_BRACKET + CLOSED_PARAN + DOT + ROUTE_THEN + LINEBR)
 	route_writer.write(TAB + RES_JSON_SUCCESS + RES_INFO + primary_value + CLOSED_BRACKET + CLOSED_PARAN + LINEBR + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 	route_writer.write(TAB + ROUTE_ERROR_FUNCTION)
 	route_writer.write(ROUTER_FUNCTION_END)
 
-	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + function_name + OPEN_PARAN)
+	db_writer.write(DB_ACCESS_FUNCTION_BEGIN + SPACE + internal_function_name + OPEN_PARAN)
 	db_writer.write(object_name + CLOSED_PARAN + OPEN_BRACKET + LINEBR)
 	db_writer.write(if_statements_for_database_gen(all_except_primary, object_name))
 	db_writer.write(TAB + DB_TEMP + DB_CREATE + object_name + EQUAL + DB_ACCESS_SQUEL_INSERT + LINEBR)
@@ -351,9 +351,10 @@ def patch_db_route(route_writer, object_name, value_array, all_except_primary, p
 	route_writer.write(ROUTER_FUNCTION_END + LINEBR + LINEBR)
 
 def sql_schema(filepath, shell_path, location_for_api):
-	# subprocess.call([shell_path, location_for_api])
+	subprocess.call([shell_path, location_for_api])
 	#Get JSON
 	list_of_routes = []
+	db_exports = []
 
 	with open(filepath) as data_file:
 		data = json.load(data_file)
@@ -361,13 +362,13 @@ def sql_schema(filepath, shell_path, location_for_api):
 	#Create SQL schema document
 	db_arch = open('db_architecture.sql', 'w+')
 	db_arch.write(BEGIN_SCHEMA + LINEBR + LINEBR)
-	# with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
-	# 	pg_query_reader = pg_query_lib.read()
-	# pg_query_reader = pg_query_reader.split('q = text.toQuery ? text.toQuery() : text;')
-	# pg_query_reader.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
-	# pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
-	# for modified_line in pg_query_reader:
-	# 	pg_query.write(modified_line)
+	with open(location_for_api + "/node_modules/pg-query/index.js") as pg_query_lib:
+		pg_query_reader = pg_query_lib.read()
+	pg_query_reader = pg_query_reader.split('q = text.toQuery ? text.toQuery() : text;')
+	pg_query_reader.insert(1, 'q = text.toQuery ? text.toQuery() : (text.toParam ? text.toParam() : text.toString());')
+	pg_query = open(location_for_api + "/node_modules/pg-query/index.js", 'w')
+	for modified_line in pg_query_reader:
+		pg_query.write(modified_line)
 
 
 	lib_directory = location_for_api + "/lib/"
@@ -375,7 +376,7 @@ def sql_schema(filepath, shell_path, location_for_api):
 	if(not os.path.exists(lib_directory)):
 		os.mkdir(lib_directory)
 
-	db_access = open(lib_directory + "dbAccess.js", 'w+')
+	db_access = open(lib_directory + "dbAccess.js", 'a')
 
 	db_access.write(DB_ACCESS_BEGIN)
 
@@ -397,7 +398,7 @@ def sql_schema(filepath, shell_path, location_for_api):
 
 			location_for_js_route = location_for_api + "/routes/" + table_name
 			js_route = open(location_for_js_route + ".js", 'w')
-			db_access = open(lib_directory + "dbAccess.js", 'a')
+			# db_access = open(lib_directory + "dbAccess.js", 'a')
 
 			list_of_routes.append(location_for_js_route)
 
@@ -431,13 +432,13 @@ def sql_schema(filepath, shell_path, location_for_api):
 			js_route.write(BEGIN_ROUTES + LINEBR + LINEBR)
 
 			#everything in a table
-			get_all_db_route(js_route, db_access, object_name, table_name, foreign_reference_array)
+			get_all = get_all_db_route(js_route, db_access, object_name, table_name, foreign_reference_array)
 
 			#get single entry in table based on various info sent through the request
-			get_single_db_route(js_route, db_access, object_name, table_name, value_array, foreign_join)
+			get_single = get_single_db_route(js_route, db_access, object_name, table_name, value_array, foreign_join)
 
 			#post to create an object of the table
-			post_db_route(js_route, db_access, object_name, table_name, primary_value, all_except_primary)
+			post = post_db_route(js_route, db_access, object_name, table_name, primary_value, all_except_primary)
 
 			#write all routes to get an entry in a foreign table based on information about the table that is referencing it
 
@@ -446,16 +447,21 @@ def sql_schema(filepath, shell_path, location_for_api):
 			js_route.write(foreign_reference_route_gen(value_array, object_name))
 
 			# route developed in the following pattern /{tablename}/#primaryValue
-			get_primary_value_db_route(js_route, db_access, table_name, object_name, primary_value, foreign_join)
+			get_primary = get_primary_value_db_route(js_route, db_access, table_name, object_name, primary_value, foreign_join)
 
 			#Put route
-			put_db_route(js_route, db_access, object_name, value_array, all_except_primary, primary_value)
+			put = put_db_route(js_route, db_access, object_name, value_array, all_except_primary, primary_value)
 
 			#patch route
 			patch_db_route(js_route, object_name, value_array, all_except_primary, primary_value)
 
 			js_route.write(END_ROUTES)
 
+			db_exports.append(get_all)
+			db_exports.append(get_single)
+			db_exports.append(post)
+			db_exports.append(get_primary)
+			db_exports.append(put)
 
 			for val in foreign_reference_array:
 				temp_var_name = DB_GET.lower() + val["foreignTable"] + BY + object_name
@@ -471,31 +477,34 @@ def sql_schema(filepath, shell_path, location_for_api):
 				db_access.write(TAB + TAB + TAB + DB_ACCESS_SPREAD +LINEBR + TAB + TAB + DB_ANONYMOUS_CALLBACK + SEMI + LINEBR + TAB + TAB + CLOSED_BRACKET + COMMA + LINEBR)
 				db_access.write(TAB + TAB + DB_ERROR + LINEBR + CLOSED_BRACKET + LINEBR + LINEBR)
 			
-	##read in app.js to include routes in routes
-	# with open(location_for_api + "/app.js") as app_file:
-	# 	data = app_file.read()
-	# data = data.split(splitter_for_appjs)
-	# app_file = open(location_for_api + "/app.js", 'w')
-	# #write beginning of file back
-	# app_file.write(data[0])
-	# for route in list_of_routes:
-	# 	#remove directory for api so we can refer to it locally (easier for deployment)
-	# 	route = route.split(location_for_api)[1]
-	# 	#create a variable name for this route to be known as
-	# 	name = route.split("/routes/")[1]
-	# 	#set variable name (described above) equal to route module location
-	# 	app_file.write("var " + name + " = require('." + route + "');\n")
-	# #The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
-	# data[1] = data[1].split("app.use('/users', users);")
-	# #write the first part of the last section out
-	# app_file.write(data[1][0])
-	# for route in list_of_routes:
-	# 	#again, get the last name
-	# 	name = route.split("/routes/")[1]
-	# 	#set the web application to use the name
-	# 	app_file.write("app.use('/"+ name + "', " + name + ");\n")
-	# #write the final part out
-	# app_file.write(data[1][1])
+	#read in app.js to include routes in routes
+	with open(location_for_api + "/app.js") as app_file:
+		data = app_file.read()
+	data = data.split(splitter_for_appjs)
+	app_file = open(location_for_api + "/app.js", 'w')
+	#write beginning of file back
+	app_file.write(data[0])
+	for route in list_of_routes:
+		#remove directory for api so we can refer to it locally (easier for deployment)
+		route = route.split(location_for_api)[1]
+		#create a variable name for this route to be known as
+		name = route.split("/routes/")[1]
+		#set variable name (described above) equal to route module location
+		app_file.write("var " + name + " = require('." + route + "');\n")
+	#The last piece of data is equal to itself, split on the definition of app.use('/users') so that we can set the application to use the routes defined above
+	data[1] = data[1].split("app.use('/users', users);")
+	#write the first part of the last section out
+	app_file.write(data[1][0])
+	for route in list_of_routes:
+		#again, get the last name
+		name = route.split("/routes/")[1]
+		#set the web application to use the name
+		app_file.write("app.use('/"+ name + "', " + name + ");\n")
+	#write the final part out
+	app_file.write(data[1][1])
+	db_access.write(LINEBR + LINEBR + LINEBR)
+	for function_object in db_exports:
+		db_access.write(DB_EXPORTS + function_object["external_function_name"] + EQUAL + function_object["internal_function_name"] + SEMI + LINEBR)
 
 
 def main():
